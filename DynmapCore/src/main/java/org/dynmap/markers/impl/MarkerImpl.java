@@ -226,7 +226,13 @@ class MarkerImpl implements Marker {
     @Override
     public void setLocation(String worldid, double x, double y, double z) {
         if(markerset == null) return;
+        boolean sameWorld = this.world.equals(worldid);
+        if(sameWorld && this.x == x && this.y == y && this.z == z) return;
+        if(!sameWorld) {
+            MarkerAPIImpl.markerUpdated(this, MarkerUpdate.DELETED);
+        }
         this.world = worldid;
+        this.normalized_world = DynmapWorld.normalizeWorldName(worldid);
         this.x = x;
         this.y = y;
         this.z = z;
