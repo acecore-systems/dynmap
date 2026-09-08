@@ -1,0 +1,9 @@
+name: DynmapValidation
+version: '1'
+main: ValidationPlugin
+api-version: '26.2'
+load: POSTWORLD
+depend: [dynmap]
+commands:
+  dynmapvalidate:
+    description: Isolated console-only rendering validation

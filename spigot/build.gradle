@@ -16,9 +16,18 @@ repositories {
     }
 }
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+java {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+    // Helpers are selected through reflection for the running server's Java version.
+    disableAutoTargetJvm()
+}
 
 dependencies {
+    testImplementation 'junit:junit:4.13.2'
+    if (findProject(':bukkit-helper-26-2') != null) {
+        implementation(project(':bukkit-helper-26-2')) { transitive = false }
+    }
     implementation('org.bukkit:bukkit:1.10.2-R0.1-SNAPSHOT') { transitive = false }
     compileOnly('com.nijikokun.bukkit:Permissions:3.1.6')  { transitive = false }
     compileOnly('me.lucko.luckperms:luckperms-api:4.3')  { transitive = false }
@@ -128,7 +137,11 @@ jar {
 
 shadowJar {
     dependencies {
-        include(dependency('org.bstats::'))
+        include(dependency('org.bstats:bstats-bukkit:.*'))
+        include(dependency('org.bstats:bstats-base:.*'))
+        if (findProject(':bukkit-helper-26-2') != null) {
+            include(dependency(':bukkit-helper-26-2'))
+        }
         include(dependency(':dynmap-api'))
         include(dependency(":DynmapCore"))
         include(dependency(':bukkit-helper'))
@@ -160,11 +173,11 @@ shadowJar {
     relocate('org.bstats', 'org.dynmap.bstats')
     destinationDirectory = file '../target'
     archiveBaseName = "Dynmap"
-    archiveClassifier = 'spigot'
+    archiveClassifier = findProject(':bukkit-helper-26-2') != null ? 'spigot-mc26' : 'spigot'
 }
 shadowJar.doLast {
     task ->
-        ant.checksum file: task.archivePath
+        ant.checksum file: task.archiveFile.get().asFile
 }
 
 artifacts {

@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [core, spigot]
+        platform: [core, spigot, spigot26]
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
@@ -28,6 +28,14 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        if: matrix.platform == 'spigot26'
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Build and inspect Minecraft 26 candidate
+        if: matrix.platform == 'spigot26'
+        run: bash gradlew-minecraft26 verifySpigotJar --no-daemon --console=plain
       - name: Test shared core
         if: matrix.platform == 'core'
         run: bash gradlew -PdynmapPlatform=core :DynmapCore:test --no-daemon --console=plain
@@ -44,4 +52,8 @@ jobs:
           path: |
             DynmapCore/build/reports/tests/
             DynmapCore/build/test-results/
+            bukkit-helper-26-2/build/reports/tests/
+            bukkit-helper-26-2/build/test-results/
+            spigot/build/reports/tests/
+            spigot/build/test-results/
             build/reports/acecore/

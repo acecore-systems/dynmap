@@ -18,6 +18,9 @@ import org.dynmap.utils.Polygon;
  * Helper for isolation of bukkit version specific issues
  */
 public abstract class BukkitVersionHelper {
+    /** Modern state detail, when available; null preserves legacy ID/data change checks. */
+    public String getBlockStateSignature(org.bukkit.block.Block block) { return null; }
+
     public static BukkitVersionHelper helper = null;
     
     public static GenericChunkCache gencache;

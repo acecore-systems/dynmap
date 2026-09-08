@@ -2,7 +2,7 @@ pluginManagement {
   repositories {
     gradlePluginPortal()
     maven { url "https://maven.fabricmc.net/" }
-    maven { url "https://papermc.io/repo/repository/maven-public/" }
+    maven { url "https://repo.papermc.io/repository/maven-public/" }
   }
 }
 
@@ -10,8 +10,15 @@ rootProject.name = 'dynmap-common'
 
 // Focused builds avoid configuring unrelated mod loaders; the default keeps upstream scope.
 def platform = providers.gradleProperty('dynmapPlatform').getOrElse('all')
-if (!(platform in ['all', 'core', 'spigot'])) {
+if (!(platform in ['all', 'core', 'spigot', 'spigot26'])) {
     throw new GradleException("Unknown dynmapPlatform: ${platform}")
+}
+if (platform == 'spigot26') {
+    if (GradleVersion.current() < GradleVersion.version('9.5.1') || !JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_25)) {
+        throw new GradleException('spigot26 requires the Minecraft 26 wrapper and JDK 25 or newer')
+    }
+    rootProject.buildFileName = 'build-minecraft26.gradle'
+    include ':bukkit-helper-26-2'
 }
 def modules = [
     'spigot',
@@ -66,5 +73,5 @@ def modules = [
 ]
 modules.findAll { name ->
     platform == 'all' || name in ['DynmapCore', 'DynmapCoreAPI'] ||
-        (platform == 'spigot' && (name in ['spigot', 'dynmap-api'] || name.startsWith('bukkit-helper')))
+        (platform in ['spigot', 'spigot26'] && (name in ['spigot', 'dynmap-api'] || name.startsWith('bukkit-helper')))
 }.each { name -> include ':' + name }

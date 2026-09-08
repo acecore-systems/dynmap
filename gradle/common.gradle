@@ -1,0 +1,79 @@
+apply plugin: 'eclipse'
+
+eclipse {
+    project {
+        name = "Dynmap"
+    }
+}
+
+allprojects  {
+  repositories {
+     if (providers.gradleProperty('useMavenLocal').isPresent()) { mavenLocal() }
+     // ForgeGradle resolves userdev modules while applying its plugin, before it
+     // finishes adding repositories. Register its existing source up front.
+     if (project.name.startsWith('forge-')) { maven { url 'https://maven.minecraftforge.net/' } }
+     mavenCentral()
+     maven { url "https://repo.mikeprimm.com" }
+     maven { url 'https://libraries.minecraft.net/' }
+     maven { url "https://oss.sonatype.org/content/repositories/releases" }
+     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+     maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
+     maven { url "https://repo.codemc.org/repository/maven-public/" }
+  }
+
+  apply plugin: 'java'
+  
+  group = 'us.dynmap'
+  version = '3.9-SNAPSHOT'
+
+}
+
+class Globals {
+  String buildNumber
+}
+def gitOutput = { List<String> arguments ->
+    providers.exec { commandLine(['git'] + arguments) }.standardOutput.asText.get().trim()
+}
+def sourceRevision = gitOutput(['rev-parse', 'HEAD'])
+def sourceDirty = !gitOutput(['status', '--porcelain', '--untracked-files=normal']).isEmpty()
+ext {
+  acecoreRevision = sourceRevision
+  acecoreDirty = sourceDirty
+  globals = new Globals(buildNumber: 'acecore-' + sourceRevision.take(12) +
+      (providers.gradleProperty('dynmapPlatform').getOrElse('all') == 'spigot26' ? '-mc26' : '') +
+      (sourceDirty ? '-dirty' : ''))
+}
+
+subprojects {  
+  apply plugin: rootProject.ext.shadowPluginId
+  apply plugin: 'java'
+  apply plugin: 'maven-publish'
+
+  java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    if (rootProject.ext.shadowPluginId == 'com.gradleup.shadow') {
+        toolchain { languageVersion = JavaLanguageVersion.of(21) }
+    }
+  }
+  tasks.withType(JavaCompile) {
+  	options.encoding = 'UTF-8'
+  }
+  tasks.withType(ProcessResources).configureEach {
+    inputs.property('acecoreBuildNumber', rootProject.ext.globals.buildNumber)
+    inputs.property('dynmapVersion', project.version.toString())
+  }
+  tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+  }
+}
+
+apply from: 'gradle/acecore-verification.gradle'
+
+clean {
+  delete "target" 
+}
+
+task setupCIWorkspace {
+}
