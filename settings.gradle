@@ -8,103 +8,63 @@ pluginManagement {
 
 rootProject.name = 'dynmap-common'
 
-include ':spigot'
-include ':bukkit-helper-113-2'
-include ':bukkit-helper-114-1'
-include ':bukkit-helper-115'
-include ':bukkit-helper-116'
-include ':bukkit-helper-116-2'
-include ':bukkit-helper-116-3'
-include ':bukkit-helper-116-4'
-include ':bukkit-helper-117'
-include ':bukkit-helper-118'
-include ':bukkit-helper-118-2'
-include ':bukkit-helper-119'
-include ':bukkit-helper-119-3'
-include ':bukkit-helper-119-4'
-include ':bukkit-helper-120'
-include ':bukkit-helper-120-2'
-include ':bukkit-helper-120-4'
-include ':bukkit-helper-120-5'
-include ':bukkit-helper-121'
-include ':bukkit-helper-121-3'
-include ':bukkit-helper-121-4'
-include ':bukkit-helper-121-5'
-include ':bukkit-helper-121-6'
-include ':bukkit-helper-121-10'
-include ':bukkit-helper-121-11'
-include ':bukkit-helper'
-include ':dynmap-api'
-include ':DynmapCore'
-include ':DynmapCoreAPI'
-include ':fabric-1.21.6'
-include ':fabric-1.21.9-10'
-include ':fabric-1.21.11'
-include ':fabric-1.20.6'
-include ':fabric-1.19.4'
-include ':fabric-1.18.2'
-include ':fabric-1.17.1'
-include ':fabric-1.16.4'
-include ':fabric-1.15.2'
-include ':fabric-1.14.4'
-include ':forge-1.21.11'
-include ':forge-1.21.10'
-include ':forge-1.21.6'
-include ':forge-1.20.6'
-include ':forge-1.19.3'
-include ':forge-1.18.2'
-include ':forge-1.17.1'
-include ':forge-1.16.5'
-include ':forge-1.15.2'
-include ':forge-1.14.4'
-
-project(':spigot').projectDir = "$rootDir/spigot" as File
-project(':bukkit-helper-113-2').projectDir = "$rootDir/bukkit-helper-113-2" as File
-project(':bukkit-helper-114-1').projectDir = "$rootDir/bukkit-helper-114-1" as File
-project(':bukkit-helper-115').projectDir = "$rootDir/bukkit-helper-115" as File
-project(':bukkit-helper-116').projectDir = "$rootDir/bukkit-helper-116" as File
-project(':bukkit-helper-116-2').projectDir = "$rootDir/bukkit-helper-116-2" as File
-project(':bukkit-helper-116-3').projectDir = "$rootDir/bukkit-helper-116-3" as File
-project(':bukkit-helper-116-4').projectDir = "$rootDir/bukkit-helper-116-4" as File
-project(':bukkit-helper-117').projectDir = "$rootDir/bukkit-helper-117" as File
-project(':bukkit-helper-118').projectDir = "$rootDir/bukkit-helper-118" as File
-project(':bukkit-helper-118-2').projectDir = "$rootDir/bukkit-helper-118-2" as File
-project(':bukkit-helper-119').projectDir = "$rootDir/bukkit-helper-119" as File
-project(':bukkit-helper-119-3').projectDir = "$rootDir/bukkit-helper-119-3" as File
-project(':bukkit-helper-119-4').projectDir = "$rootDir/bukkit-helper-119-4" as File
-project(':bukkit-helper-120').projectDir = "$rootDir/bukkit-helper-120" as File
-project(':bukkit-helper-120-2').projectDir = "$rootDir/bukkit-helper-120-2" as File
-project(':bukkit-helper-120-4').projectDir = "$rootDir/bukkit-helper-120-4" as File
-project(':bukkit-helper-120-5').projectDir = "$rootDir/bukkit-helper-120-5" as File
-project(':bukkit-helper-121').projectDir = "$rootDir/bukkit-helper-121" as File
-project(':bukkit-helper-121-3').projectDir = "$rootDir/bukkit-helper-121-3" as File
-project(':bukkit-helper-121-4').projectDir = "$rootDir/bukkit-helper-121-4" as File
-project(':bukkit-helper-121-5').projectDir = "$rootDir/bukkit-helper-121-5" as File
-project(':bukkit-helper-121-6').projectDir = "$rootDir/bukkit-helper-121-6" as File
-project(':bukkit-helper-121-10').projectDir = "$rootDir/bukkit-helper-121-10" as File
-project(':bukkit-helper-121-11').projectDir = "$rootDir/bukkit-helper-121-11" as File
-project(':bukkit-helper').projectDir = "$rootDir/bukkit-helper" as File
-project(':dynmap-api').projectDir = "$rootDir/dynmap-api" as File
-project(':DynmapCore').projectDir = "$rootDir/DynmapCore" as File
-project(':DynmapCoreAPI').projectDir = "$rootDir/DynmapCoreAPI" as File
-project(':fabric-1.21.6').projectDir = "$rootDir/fabric-1.21.6" as File
-project(':fabric-1.21.9-10').projectDir = "$rootDir/fabric-1.21.9-10" as File
-project(':fabric-1.21.11').projectDir = "$rootDir/fabric-1.21.11" as File
-project(':fabric-1.20.6').projectDir = "$rootDir/fabric-1.20.6" as File
-project(':fabric-1.19.4').projectDir = "$rootDir/fabric-1.19.4" as File
-project(':fabric-1.18.2').projectDir = "$rootDir/fabric-1.18.2" as File
-project(':fabric-1.17.1').projectDir = "$rootDir/fabric-1.17.1" as File
-project(':fabric-1.16.4').projectDir = "$rootDir/fabric-1.16.4" as File
-project(':fabric-1.15.2').projectDir = "$rootDir/fabric-1.15.2" as File
-project(':fabric-1.14.4').projectDir = "$rootDir/fabric-1.14.4" as File
-project(':forge-1.21.11').projectDir = "$rootDir/forge-1.21.11" as File
-project(':forge-1.21.10').projectDir = "$rootDir/forge-1.21.10" as File
-project(':forge-1.21.6').projectDir = "$rootDir/forge-1.21.6" as File
-project(':forge-1.20.6').projectDir = "$rootDir/forge-1.20.6" as File
-project(':forge-1.19.3').projectDir = "$rootDir/forge-1.19.3" as File
-project(':forge-1.18.2').projectDir = "$rootDir/forge-1.18.2" as File
-project(':forge-1.17.1').projectDir = "$rootDir/forge-1.17.1" as File
-project(':forge-1.16.5').projectDir = "$rootDir/forge-1.16.5" as File
-project(':forge-1.15.2').projectDir = "$rootDir/forge-1.15.2" as File
-project(':forge-1.14.4').projectDir = "$rootDir/forge-1.14.4" as File
-
+// Focused builds avoid configuring unrelated mod loaders; the default keeps upstream scope.
+def platform = providers.gradleProperty('dynmapPlatform').getOrElse('all')
+if (!(platform in ['all', 'core', 'spigot'])) {
+    throw new GradleException("Unknown dynmapPlatform: ${platform}")
+}
+def modules = [
+    'spigot',
+    'bukkit-helper-113-2',
+    'bukkit-helper-114-1',
+    'bukkit-helper-115',
+    'bukkit-helper-116',
+    'bukkit-helper-116-2',
+    'bukkit-helper-116-3',
+    'bukkit-helper-116-4',
+    'bukkit-helper-117',
+    'bukkit-helper-118',
+    'bukkit-helper-118-2',
+    'bukkit-helper-119',
+    'bukkit-helper-119-3',
+    'bukkit-helper-119-4',
+    'bukkit-helper-120',
+    'bukkit-helper-120-2',
+    'bukkit-helper-120-4',
+    'bukkit-helper-120-5',
+    'bukkit-helper-121',
+    'bukkit-helper-121-3',
+    'bukkit-helper-121-4',
+    'bukkit-helper-121-5',
+    'bukkit-helper-121-6',
+    'bukkit-helper-121-10',
+    'bukkit-helper-121-11',
+    'bukkit-helper',
+    'dynmap-api',
+    'DynmapCore',
+    'DynmapCoreAPI',
+    'fabric-1.21.6',
+    'fabric-1.21.9-10',
+    'fabric-1.21.11',
+    'fabric-1.20.6',
+    'fabric-1.19.4',
+    'fabric-1.18.2',
+    'fabric-1.17.1',
+    'fabric-1.16.4',
+    'fabric-1.15.2',
+    'fabric-1.14.4',
+    'forge-1.21.11',
+    'forge-1.21.10',
+    'forge-1.21.6',
+    'forge-1.20.6',
+    'forge-1.19.3',
+    'forge-1.18.2',
+    'forge-1.17.1',
+    'forge-1.16.5',
+    'forge-1.15.2',
+    'forge-1.14.4',
+]
+modules.findAll { name ->
+    platform == 'all' || name in ['DynmapCore', 'DynmapCoreAPI'] ||
+        (platform == 'spigot' && (name in ['spigot', 'dynmap-api'] || name.startsWith('bukkit-helper')))
+}.each { name -> include ':' + name }

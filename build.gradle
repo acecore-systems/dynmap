@@ -28,12 +28,12 @@ eclipse {
 
 allprojects  {
   repositories {
-     mavenLocal()
+     if (providers.gradleProperty('useMavenLocal').isPresent()) { mavenLocal() }
+     mavenCentral()
+     maven { url "https://repo.mikeprimm.com" }
      maven { url 'https://libraries.minecraft.net/' }
      maven { url "https://oss.sonatype.org/content/repositories/releases" }
      maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
-     maven { url "https://repo.mikeprimm.com" }
-     maven { url "https://repo.maven.apache.org/maven2" }
      maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
      maven { url "https://repo.codemc.org/repository/maven-public/" }
   }
@@ -46,10 +46,19 @@ allprojects  {
 }
 
 class Globals {
-  String buildNumber =  System.getenv().BUILD_NUMBER ?: "Dev"
+  String buildNumber
 }
+def gitOutput = { List<String> arguments ->
+    def output = new ByteArrayOutputStream()
+    exec { commandLine(['git'] + arguments); standardOutput = output }
+    output.toString('UTF-8').trim()
+}
+def sourceRevision = gitOutput(['rev-parse', 'HEAD'])
+def sourceDirty = !gitOutput(['status', '--porcelain', '--untracked-files=normal']).isEmpty()
 ext {
-  globals = new Globals()
+  acecoreRevision = sourceRevision
+  acecoreDirty = sourceDirty
+  globals = new Globals(buildNumber: 'acecore-' + sourceRevision.take(12) + (sourceDirty ? '-dirty' : ''))
 }
 
 subprojects {  
@@ -62,7 +71,17 @@ subprojects {
   tasks.withType(JavaCompile) {
   	options.encoding = 'UTF-8'
   }
+  tasks.withType(ProcessResources).configureEach {
+    inputs.property('acecoreBuildNumber', rootProject.ext.globals.buildNumber)
+    inputs.property('dynmapVersion', project.version.toString())
+  }
+  tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+  }
 }
+
+apply from: 'gradle/acecore-verification.gradle'
 
 clean {
   delete "target" 
