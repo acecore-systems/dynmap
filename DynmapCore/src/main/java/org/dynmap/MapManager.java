@@ -890,11 +890,30 @@ public class MapManager {
     }
     
     private class CheckWorldTimes implements Runnable {
-    	HashMap<String, Polygon> last_worldborder = new HashMap<String, Polygon>();
+        private final HashMap<DynmapWorld, Polygon> last_worldborder = new HashMap<DynmapWorld, Polygon>();
+
+        private boolean sameBorder(Polygon border, Polygon previous) {
+            if (border == null || previous == null) {
+                return border == previous;
+            }
+            if (border.size() != previous.size()) {
+                return false;
+            }
+            for (int i = 0; i < border.size(); i++) {
+                Polygon.Point2D point = border.getVertex(i);
+                Polygon.Point2D oldPoint = previous.getVertex(i);
+                if (point.x != oldPoint.x || point.y != oldPoint.y) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         public void run() {
             Future<Integer> f = core.getServer().callSyncMethod(new Callable<Integer>() {
                 public Integer call() throws Exception {
                     long now_nsec = System.nanoTime();
+                    last_worldborder.keySet().retainAll(worlds);
                     for(DynmapWorld w : worlds) {
                         if(w.isLoaded()) {
                             int new_servertime = (int)(w.getTime() % 24000);
@@ -907,13 +926,23 @@ public class MapManager {
                             }
                             // Check world border
                             Polygon wb = w.getWorldBorder();
-                            Polygon oldwb = last_worldborder.get(w.getName());
-                            if (((wb == null) && (oldwb == null)) ||
-                            		wb.equals(oldwb)) {	// No change
-                            }
-                            else { 
+                            Polygon oldwb = last_worldborder.get(w);
+                            if (!sameBorder(wb, oldwb)) {
+                                // Keep a deep snapshot: platforms may reuse mutable polygons/vertices.
+                                Polygon snapshot = null;
+                                if (wb != null) {
+                                    snapshot = new Polygon();
+                                    for (int i = 0; i < wb.size(); i++) {
+                                        Polygon.Point2D point = wb.getVertex(i);
+                                        snapshot.addVertex(point.x, point.y);
+                                    }
+                                }
                                 core.listenerManager.processWorldEvent(EventType.WORLD_SPAWN_CHANGE, w);
+                                last_worldborder.put(w, snapshot);
                             }
+                        }
+                        else {
+                            last_worldborder.remove(w);
                         }
                         /* Tick invalidated tiles processing */
                         for(MapTypeState mts : w.mapstate) {
