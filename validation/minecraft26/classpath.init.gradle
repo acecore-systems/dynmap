@@ -1,0 +1,9 @@
+gradle.projectsEvaluated {
+    rootProject.project(':bukkit-helper-26-2').tasks.register('validationClasspath') {
+        doLast {
+            def output = rootProject.file('build/validation/minecraft26/classpath.txt')
+            output.parentFile.mkdirs()
+            output.text = rootProject.project(':bukkit-helper-26-2').sourceSets.main.compileClasspath.asPath
+        }
+    }
+}

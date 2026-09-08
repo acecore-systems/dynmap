@@ -74,6 +74,11 @@ import java.util.Map;
 public class BukkitVersionHelperSpigot26_2 extends BukkitVersionHelper {
 
 	@Override
+	public String getBlockStateSignature(org.bukkit.block.Block block) {
+		return block.getBlockData().getAsString();
+	}
+
+	@Override
 	public boolean isUnsafeAsync() {
 		return false;
 	}

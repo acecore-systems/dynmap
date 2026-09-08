@@ -52,6 +52,8 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerBedLeaveEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.PluginEnableEvent;
@@ -211,6 +213,7 @@ public class DynmapPlugin extends JavaPlugin implements DynmapAPI {
         Location loc;
         int typeid;
         byte data;
+        String stateSignature;
         String trigger;
     };
     private LinkedList<BlockToCheck> blocks_to_check = null;
@@ -1296,7 +1299,8 @@ public class DynmapPlugin extends JavaPlugin implements DynmapAPI {
                 /* Avoid stationary and moving water churn */
                 if(bt == 9) bt = 8;
                 if(btt.typeid == 9) btt.typeid = 8;
-                if((bt != btt.typeid) || (btt.data != w.getBlockAt(loc).getData())) {
+                if((bt != btt.typeid) || (btt.stateSignature == null && btt.data != w.getBlockAt(loc).getData()) ||
+                        (btt.stateSignature != null && !btt.stateSignature.equals(helper.getBlockStateSignature(w.getBlockAt(loc))))) {
                     String wn = getWorld(w).getName();
                     invalidateSnapshot(wn, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());                    	
                     mapManager.touch(wn, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), btt.trigger);
@@ -1320,7 +1324,8 @@ public class DynmapPlugin extends JavaPlugin implements DynmapAPI {
         BlockToCheck btt = new BlockToCheck();
         btt.loc = b.getLocation();
         btt.typeid = getBlockIdFromBlock(b);
-        btt.data = b.getData();
+        btt.stateSignature = helper.getBlockStateSignature(b);
+        btt.data = btt.stateSignature == null ? b.getData() : 0;
         btt.trigger = trigger;
         blocks_to_check_accum.add(btt); /* Add to accumulator */
         btth.startIfNeeded();
@@ -1378,6 +1383,16 @@ public class DynmapPlugin extends JavaPlugin implements DynmapAPI {
         
         if(onplace) {
             Listener placelistener = new Listener() {
+                @EventHandler(priority=EventPriority.MONITOR)
+                public void onStatueInteract(PlayerInteractEvent event) {
+                    Block block = event.getClickedBlock();
+                    if (event.getAction() == Action.RIGHT_CLICK_BLOCK && block != null &&
+                            event.useInteractedBlock() != org.bukkit.event.Event.Result.DENY &&
+                            block.getType().name().endsWith("COPPER_GOLEM_STATUE")) {
+                        // Interaction fires before the new pose/oxidation/wax state is applied.
+                        checkBlock(block, "blockplace");
+                    }
+                }
                 @EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
                 public void onBlockPlace(BlockPlaceEvent event) {
                     Location loc = event.getBlock().getLocation();
