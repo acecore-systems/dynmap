@@ -1,3 +1,7 @@
+> **Unofficial Acecore fork.** Support: https://github.com/acecore-systems/dynmap/issues
+> Build and maintenance: [docs/acecore-maintenance.md](docs/acecore-maintenance.md).
+> Not supported or endorsed by the Dynmap team. Original upstream documentation follows.
+
 # Dynmap®  - dynamic web maps for Minecraft servers
 
 # Jump around the README

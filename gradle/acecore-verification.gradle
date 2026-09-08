@@ -1,0 +1,69 @@
+import groovy.json.JsonOutput
+import java.security.MessageDigest
+import java.util.zip.ZipFile
+
+def sha256 = { File file ->
+    def digest = MessageDigest.getInstance('SHA-256')
+    file.withInputStream { stream ->
+        byte[] buffer = new byte[65536]
+        int count
+        while ((count = stream.read(buffer)) != -1) { digest.update(buffer, 0, count) }
+    }
+    digest.digest().encodeHex().toString()
+}
+
+if (findProject(':spigot') != null) {
+    tasks.register('verifySpigotJar') {
+        dependsOn ':spigot:shadowJar', ':DynmapCore:test'
+        doLast {
+            File jar = project(':spigot').tasks.named('shadowJar').get().archiveFile.get().asFile
+            String expectedVersion = "${project.version}-${globals.buildNumber}"
+            new ZipFile(jar).withCloseable { zip ->
+                [
+                    'org/dynmap/bukkit/DynmapPlugin.class',
+                    'org/dynmap/DynmapCore.class',
+                    'org/dynmap/jetty/server/Server.class',
+                    'org/dynmap/jetty/servlet/ServletContextHandler.class',
+                    'org/dynmap/javax/servlet/Servlet.class',
+                    'org/dynmap/bstats/bukkit/Metrics.class',
+                    'org/dynmap/s3lite/api/client/S3Client.class',
+                    'extracted/web/js/map.js'
+                ].each { name ->
+                    if (zip.getEntry(name) == null) { throw new GradleException("Missing runtime entry: ${name}") }
+                }
+                ['plugin.yml', 'core.yml'].each { name ->
+                    def entry = zip.getEntry(name)
+                    if (entry == null || !zip.getInputStream(entry).getText('UTF-8').contains('version: "' + expectedVersion + '"')) {
+                        throw new GradleException("Unexpected ${name} version; expected ${expectedVersion}")
+                    }
+                }
+            }
+            def dependencies = []
+            subprojects.sort { it.path }.each { p ->
+                ['compileClasspath', 'runtimeClasspath', 'testRuntimeClasspath'].each { name ->
+                    def config = p.configurations.findByName(name)
+                    if (config != null && config.canBeResolved) {
+                        config.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+                            if (artifact.id.componentIdentifier instanceof org.gradle.api.artifacts.component.ModuleComponentIdentifier) {
+                                dependencies << [module: artifact.moduleVersion.id.toString(), file: artifact.file.name,
+                                                 sha256: sha256(artifact.file)]
+                            }
+                        }
+                    }
+                }
+            }
+            File reportDir = layout.buildDirectory.dir('reports/acecore').get().asFile
+            reportDir.mkdirs()
+            def checksum = sha256(jar)
+            new File(reportDir, 'SHA256SUMS.txt').text = "${checksum}  ${jar.name}\n"
+            new File(reportDir, 'build.json').text = JsonOutput.prettyPrint(JsonOutput.toJson([
+                revision: acecoreRevision, dirty: acecoreDirty, version: expectedVersion,
+                platform: providers.gradleProperty('dynmapPlatform').getOrElse('all'),
+                gradle: gradle.gradleVersion, java: System.getProperty('java.version'),
+                jar: jar.name, sha256: checksum,
+                dependencies: dependencies.unique().sort { a, b -> (a.module + a.file) <=> (b.module + b.file) }
+            ])) + '\n'
+            logger.lifecycle("Verified ${jar.name}: ${expectedVersion}; SHA-256 ${checksum}")
+        }
+    }
+}

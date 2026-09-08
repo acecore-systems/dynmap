@@ -1,0 +1,47 @@
+name: Acecore build verification
+on:
+  push:
+    branches: [v3.0, 'codex/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [core, spigot]
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Test shared core
+        if: matrix.platform == 'core'
+        run: bash gradlew -PdynmapPlatform=core :DynmapCore:test --no-daemon --console=plain
+      - name: Build and inspect Spigot jar
+        if: matrix.platform == 'spigot'
+        run: bash gradlew -PdynmapPlatform=spigot verifySpigotJar --no-daemon --console=plain
+      - name: Preserve verification reports (no plugin binaries)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: verification-${{ matrix.platform }}-${{ github.sha }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            DynmapCore/build/reports/tests/
+            DynmapCore/build/test-results/
+            build/reports/acecore/
