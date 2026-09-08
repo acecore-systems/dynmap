@@ -30,8 +30,15 @@ public class ValidationPlugin extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(this, this);
         org.bukkit.World world = getServer().getWorlds().get(0);
         world.setTime(6000);
-        world.setGameRule(org.bukkit.GameRule.DO_DAYLIGHT_CYCLE, false);
-        world.setGameRule(org.bukkit.GameRule.RANDOM_TICK_SPEED, 0);
+        setRule(world, "advance_time", "doDaylightCycle", false);
+        setRule(world, "random_tick_speed", "randomTickSpeed", 0);
+    }
+    @SuppressWarnings("unchecked")
+    private static <T> void setRule(org.bukkit.World world, String current, String legacy, T value) {
+        org.bukkit.GameRule<?> rule = org.bukkit.GameRule.getByName(current);
+        if (rule == null) rule = org.bukkit.GameRule.getByName(legacy);
+        if (rule == null || !rule.getType().isInstance(value) || !world.setGameRule((org.bukkit.GameRule<T>)rule, value))
+            throw new IllegalStateException("Cannot set game rule " + current);
     }
     // Keep waterlogged samples independent; flowing water would obscure adjacent dry samples.
     @EventHandler public void fluid(BlockFromToEvent event) { event.setCancelled(true); }
