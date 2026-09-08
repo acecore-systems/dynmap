@@ -15,10 +15,20 @@ def sha256 = { File file ->
 if (findProject(':spigot') != null) {
     tasks.register('verifySpigotJar') {
         dependsOn ':spigot:shadowJar', ':DynmapCore:test'
+        if (findProject(':bukkit-helper-26-2') != null) {
+            dependsOn ':bukkit-helper-26-2:test'
+        }
         doLast {
             File jar = project(':spigot').tasks.named('shadowJar').get().archiveFile.get().asFile
             String expectedVersion = "${project.version}-${globals.buildNumber}"
             new ZipFile(jar).withCloseable { zip ->
+                if (zip.entries().any { it.name.startsWith('net/minecraft/') || it.name.startsWith('org/bukkit/craftbukkit/') }) {
+                    throw new GradleException('Server implementation classes must not be bundled')
+                }
+                if (findProject(':bukkit-helper-26-2') != null &&
+                    zip.getEntry('org/dynmap/bukkit/helper/v26_2/BukkitVersionHelperSpigot26_2.class') == null) {
+                    throw new GradleException('Minecraft 26 helper is missing')
+                }
                 [
                     'org/dynmap/bukkit/DynmapPlugin.class',
                     'org/dynmap/DynmapCore.class',

@@ -1,0 +1,66 @@
+# Minecraft 26.2 候補
+
+Issue #2 の対象は Paper 26.2 の隔離検証用候補です。自動本番反映や一般向けJAR配布は行いません。
+R2マーカー修正 (#1) はこの差分に含めず、ビルド基盤 (#3) を前提にします。
+
+## 上流と採否
+
+- 上流PR: https://github.com/webbukkit/dynmap/pull/4271 （取得時は未マージ）
+- 取得head: `f87c4dda5b7feea9ff60d68f96475d73d3eafd91`
+- 採用元ソース: `46ba070e03267d942ff542371a91c6ca67e37c0e`
+- 基点: `93b454efb8802dc7406d6873434f2aeec5c636f4`
+
+新helper、NBT/チャンク読み取り、ブロックモデル・テクスチャのソースを取り込みました。
+上流PRの `Plugin/*.jar`、Fabricの新プラットフォーム、Forgeビルドの削除・移動、
+作業用指示ファイルは取り込みません。Apache-2.0と既存の著作権・商標表示を維持し、
+追加PNGは上流PRのMinecraft用標準テクスチャ資材と同じものです。
+ソースの公開とバイナリの一般配布は別に判断します。
+
+Acecoreでは以下を調整しています。
+
+- バージョン判定は26.2に限定し、旧サーバーの既存fallbackを維持。
+- dev-bundleの動的指定を `26.2.build.105-stable` に固定。
+- Java 25 / Gradle 9.5.1 / Shadow 9.6.0 / paperweight 2.0.0-beta.21 は候補用。
+  元のGradle 8.14 / Shadow 8.1.7は既存ビルド用に維持。
+- 共通ビルド処理は `gradle/common.gradle` に集約。Java DSLは両Gradleで使える形式へ変更。
+- helperだけJava 25、共有コア・既存helperのコンパイルとコアテストはJava 21を使用。
+  共有コア/APIのJava 8ターゲットは維持。
+- Shadowのgroupだけの指定を明示的な正規表現に直し、Jetty/Servlet等の脱落を検査。
+- ブロック名リストで単一状態ブロックを飛ばし、複数状態を重複登録する上流helperの処理を、
+  ブロックレジストリIDと名前の対応へ修正。
+- スキン応答のエラー時に元の応答本文をログへ出さない。
+- NBTの数値・欠損値、配列、チャンクパレット、long境界のビット展開をテスト。
+
+## ビルド
+
+JDK 21と25の両方をインストールし、候補用wrapperはJAVA_HOMEを25にします。
+Gradleが21を検出しない場合は `-Porg.gradle.java.installations.paths=<JDK21のパス>` を追加します。
+
+```sh
+# Minecraft 26候補: JAVA_HOME=JDK25
+bash gradlew-minecraft26 verifySpigotJar --no-daemon
+# 既存向け: JAVA_HOME=JDK21
+bash gradlew -PdynmapPlatform=spigot verifySpigotJar --no-daemon
+```
+
+Windowsではそれぞれ `gradlew-minecraft26.bat` / `gradlew.bat` を使います。
+候補出力は `target/Dynmap-3.9-SNAPSHOT-spigot-mc26.jar`、版番号には `-mc26` を付けます。
+既存向けの `*-spigot.jar` と区別してください。監査記録は検証のたびに上書きされるため、
+複数プロファイルの証拠を保存するときはCIのように別worktree/jobを使います。
+
+## 稼働検証の確認項目
+
+既存設定やR2資格情報を持ち込まず、localhost限定・新規ワールド・ファイル保存で検証します。
+Paper 26.2 build 105 / Java 25を主対象とし、旧Paperは既存向けJARの回帰検証対象です。
+
+1. Dynmap有効化とJetty起動。未対応platform、Class/Method欠落、NBT例外がないこと。
+2. sulfur/cinnabar全系列、上下/二重slab、階段の向き、wall、sulfur spike、
+   golden dandelionと鉢植え、creaking heart各状態、既存の石・ガラス・水・葉を描画。
+3. surface/flat、部分更新、ズーム画像、ブラウザ表示を確認。
+4. 同じ入力で旧Paper向けビルドの起動・レンダー・マーカーを確認。
+5. テストサーバーを正常停止し、ソース版・JAR SHA-256・ログを記録。
+
+候補の起動だけでは26.2の全ブロック・全状態への対応完了とはしません。
+上流PRのcopper golem statueは銅色の立方体による暫定表示です。実モデルへの忠実性は未達です。
+Spigot 26.2、Fabric/Forge 26.2、全旧バージョン、一般プレイヤー操作の網羅試験は別途必要です。
+本番へ進める際は [運用手順](acecore-maintenance.md) のバックアップと個別承認に従います。
