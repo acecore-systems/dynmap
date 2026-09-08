@@ -30,15 +30,17 @@ public class ValidationPlugin extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(this, this);
         org.bukkit.World world = getServer().getWorlds().get(0);
         world.setTime(6000);
-        setRule(world, "advance_time", "doDaylightCycle", false);
-        setRule(world, "random_tick_speed", "randomTickSpeed", 0);
+        // Spigot registers vanilla commands after plugin enablement.
+        getServer().getScheduler().runTask(this, () -> {
+            setRule("advance_time", "false");
+            setRule("random_tick_speed", "0");
+        });
     }
-    @SuppressWarnings("unchecked")
-    private static <T> void setRule(org.bukkit.World world, String current, String legacy, T value) {
-        org.bukkit.GameRule<?> rule = org.bukkit.GameRule.getByName(current);
-        if (rule == null) rule = org.bukkit.GameRule.getByName(legacy);
-        if (rule == null || !rule.getType().isInstance(value) || !world.setGameRule((org.bukkit.GameRule<T>)rule, value))
-            throw new IllegalStateException("Cannot set game rule " + current);
+    private void setRule(String name, String value) {
+        // GameRule is a class in Paper and an interface in Spigot 26.2.
+        // Use the shared vanilla command instead of linking either API representation.
+        if (!getServer().dispatchCommand(getServer().getConsoleSender(), "minecraft:gamerule minecraft:" + name + " " + value))
+            throw new IllegalStateException("Cannot set game rule " + name);
     }
     // Keep waterlogged samples independent; flowing water would obscure adjacent dry samples.
     @EventHandler public void fluid(BlockFromToEvent event) { event.setCancelled(true); }
