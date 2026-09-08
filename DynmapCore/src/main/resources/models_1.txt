@@ -4756,3 +4756,5 @@ modellist:id=%dropper,state=facing:down,box=0.000000/0.000000/0.000000:16.000000
 
 # Copper chests
 [1.21.9-]customblock:id=copper_chest,id=exposed_copper_chest,id=weathered_copper_chest,id=oxidized_copper_chest,id=waxed_copper_chest,id=waxed_exposed_copper_chest,id=waxed_weathered_copper_chest,id=waxed_oxidized_copper_chest,class=org.dynmap.hdmap.renderer.ChestStateRenderer,doublechest=true
+
+[26.2-]customblock:id=%copper_golem_statue,id=%exposed_copper_golem_statue,id=%weathered_copper_golem_statue,id=%oxidized_copper_golem_statue,id=%waxed_copper_golem_statue,id=%waxed_exposed_copper_golem_statue,id=%waxed_weathered_copper_golem_statue,id=%waxed_oxidized_copper_golem_statue,class=org.dynmap.hdmap.renderer.CopperGolemStatueRenderer
