@@ -921,13 +921,7 @@ public class DynmapPlugin extends JavaPlugin implements DynmapAPI {
 
         /* Get MC version */
         String bukkitver = getServer().getVersion();
-        String mcver = "1.0.0";
-        int idx = bukkitver.indexOf("(MC: ");
-        if(idx > 0) {
-            mcver = bukkitver.substring(idx+5);
-            idx = mcver.indexOf(")");
-            if(idx > 0) mcver = mcver.substring(0, idx);
-        }
+        String mcver = MinecraftVersion.fromServer(bukkitver, getServer().getBukkitVersion());
 
         // Initialize block states
         helper.initializeBlockStates();

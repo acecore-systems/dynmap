@@ -14,7 +14,7 @@ def sha256 = { File file ->
 
 if (findProject(':spigot') != null) {
     tasks.register('verifySpigotJar') {
-        dependsOn ':spigot:shadowJar', ':DynmapCore:test'
+        dependsOn ':spigot:shadowJar', ':DynmapCore:test', ':spigot:test'
         if (findProject(':bukkit-helper-26-2') != null) {
             dependsOn ':bukkit-helper-26-2:test'
         }

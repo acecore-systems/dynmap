@@ -54,4 +54,6 @@ jobs:
             DynmapCore/build/test-results/
             bukkit-helper-26-2/build/reports/tests/
             bukkit-helper-26-2/build/test-results/
+            spigot/build/reports/tests/
+            spigot/build/test-results/
             build/reports/acecore/

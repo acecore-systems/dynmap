@@ -24,6 +24,7 @@ java {
 }
 
 dependencies {
+    testImplementation 'junit:junit:4.13.2'
     if (findProject(':bukkit-helper-26-2') != null) {
         implementation(project(':bukkit-helper-26-2')) { transitive = false }
     }
