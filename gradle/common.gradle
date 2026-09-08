@@ -9,6 +9,9 @@ eclipse {
 allprojects  {
   repositories {
      if (providers.gradleProperty('useMavenLocal').isPresent()) { mavenLocal() }
+     // ForgeGradle resolves userdev modules while applying its plugin, before it
+     // finishes adding repositories. Register its existing source up front.
+     if (project.name.startsWith('forge-')) { maven { url 'https://maven.minecraftforge.net/' } }
      mavenCentral()
      maven { url "https://repo.mikeprimm.com" }
      maven { url 'https://libraries.minecraft.net/' }
