@@ -1402,19 +1402,17 @@ public class IsoHDPerspective implements HDPerspective {
             try {
                 if(mtile.matchesHashCode(crc) == false) {
                     /* Wrap buffer as buffered image */
-                    if(rendered[i]) {   
-                        mtile.write(crc, im[i].buf_img, startTimestamp);
+                    tile_update = rendered[i] ? mtile.write(crc, im[i].buf_img, startTimestamp) : mtile.delete();
+                    if (tile_update) {
+                        MapManager.mapman.pushUpdate(tile.getDynmapWorld(), new Client.Tile(mtile.getURI()));
+                        renderone = true;
+                    } else {
+                        world.getMapState(shaderstate[i].getMap()).invalidateTile(tile.tx, tile.ty);
                     }
-                    else {
-                        mtile.delete();
-                    }
-                    MapManager.mapman.pushUpdate(tile.getDynmapWorld(), new Client.Tile(mtile.getURI()));
-                    tile_update = true;
-                    renderone = true;
                 }
                 else {
                     if(!rendered[i]) {   
-                        mtile.delete();
+                        if (!mtile.delete()) world.getMapState(shaderstate[i].getMap()).invalidateTile(tile.tx, tile.ty);
                     }
                 }
             } finally {
@@ -1433,19 +1431,17 @@ public class IsoHDPerspective implements HDPerspective {
                 try {
                     if(mtile.matchesHashCode(crc) == false) {
                         /* Wrap buffer as buffered image */
-                        if(rendered[i]) {
-                            mtile.write(crc, dayim[i].buf_img, startTimestamp);
+                        tile_update = rendered[i] ? mtile.write(crc, dayim[i].buf_img, startTimestamp) : mtile.delete();
+                        if (tile_update) {
+                            MapManager.mapman.pushUpdate(tile.getDynmapWorld(), new Client.Tile(mtile.getURI()));
+                            renderone = true;
+                        } else {
+                            world.getMapState(shaderstate[i].getMap()).invalidateTile(tile.tx, tile.ty);
                         }
-                        else {
-                            mtile.delete();
-                        }
-                        MapManager.mapman.pushUpdate(tile.getDynmapWorld(), new Client.Tile(mtile.getURI()));
-                        tile_update = true;
-                        renderone = true;
                     }
                     else {
                         if(!rendered[i]) {   
-                            mtile.delete();
+                            if (!mtile.delete()) world.getMapState(shaderstate[i].getMap()).invalidateTile(tile.tx, tile.ty);
                         }
                     }
                 } finally {

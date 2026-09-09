@@ -26,7 +26,7 @@ public abstract class MapStorage {
     private static HashMap<String, Integer> filelocks = new HashMap<String, Integer>();
     private static final Integer WRITELOCK = (-1);
     protected File baseStandaloneDir;
-    protected boolean isShutdown;
+    protected volatile boolean isShutdown;
 
     protected long serverID;
     

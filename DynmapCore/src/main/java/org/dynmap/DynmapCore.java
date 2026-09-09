@@ -507,10 +507,6 @@ public class DynmapCore implements DynmapCommonAPI {
             authmgr = new WebAuthManager(this);
             defaultStorage.setLoginEnabled(this);
         }
-        // If storage serves web files, extract and publsh them
-        if (defaultStorage.needsStaticWebFiles()) {
-        	updateStaticWebToStorage();
-        }
         /* Load control for leaf transparency (spout lighting bug workaround) */
         transparentLeaves = configuration.getBoolean("transparent-leaves", true);
         
@@ -632,6 +628,10 @@ public class DynmapCore implements DynmapCommonAPI {
 
         mapManager = new MapManager(this, configuration);
         mapManager.startRendering();
+        // Network publication must not block the server startup thread.
+        if (defaultStorage.needsStaticWebFiles()) {
+            updateStaticWebToStorage();
+        }
 
         if (markerapi != null) {
         	MarkerAPIImpl.completeInitializeMarkerAPI(markerapi);
@@ -2856,6 +2856,9 @@ public class DynmapCore implements DynmapCommonAPI {
         	return;
         }
         Log.info("Publishing web files to storage");
+        org.dynmap.utils.RetryingFileQueue publication = new org.dynmap.utils.RetryingFileQueue(
+                defaultStorage::setStaticWebFile, MapManager::scheduleDelayedJob,
+                name -> Log.severe("Web asset publication failed; retry queued: " + name));
         /* Open JAR as ZIP */
         ZipFile zf = null;
         InputStream ins = null;
@@ -2882,7 +2885,7 @@ public class DynmapCore implements DynmapCommonAPI {
                     while ((len = ins.read(buf)) >= 0) {
                     	buffer.write(buf,  0,  len);
                     }
-	                defaultStorage.setStaticWebFile(n, buffer);
+                    publication.enqueue(n, buffer);
             	} catch(IOException io) {
                     Log.severe("Error updating file in storage - " + n, io);                		
             	} finally {
