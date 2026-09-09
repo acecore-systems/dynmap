@@ -45,7 +45,6 @@ import io.github.linktosriram.s3lite.api.response.S3Object;
 import io.github.linktosriram.s3lite.core.auth.AwsBasicCredentials;
 import io.github.linktosriram.s3lite.core.client.DefaultS3ClientBuilder;
 import io.github.linktosriram.s3lite.http.spi.request.RequestBody;
-import io.github.linktosriram.s3lite.http.urlconnection.URLConnectionSdkHttpClient;
 
 public class AWSS3MapStorage extends MapStorage {
     public class StorageTile extends MapStorageTile {
@@ -792,10 +791,7 @@ public class AWSS3MapStorage extends MapStorage {
                         c = RetryingS3Client.wrap(new DefaultS3ClientBuilder()
                         	    .credentialsProvider(() -> AwsBasicCredentials.create(access_key_id, secret_access_key))
                         	    .region(region)
-                            .httpClient(URLConnectionSdkHttpClient.withCustomizer(connection -> {
-                                    connection.setConnectTimeout(5000);
-                                    connection.setReadTimeout(10000);
-                                }))
+                            .httpClient(SafeS3HttpClient.create())
                             .build());
                         if (c == null) {
                         	Log.severe("Error creating S3 access client");      

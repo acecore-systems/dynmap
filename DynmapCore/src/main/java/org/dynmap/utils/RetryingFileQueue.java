@@ -47,7 +47,9 @@ public final class RetryingFileQueue {
                 synchronized (this) { value = files.remove(key); }
                 boolean success = false;
                 try { success = writer.test(key, value); }
-                catch (RuntimeException ex) { /* Retain the value, and service the other files. */ }
+                catch (RuntimeException ex) {
+                    org.dynmap.Log.severe("Unexpected file publication failure; retaining " + key, ex);
+                }
                 if (!success) {
                     failed = true;
                     synchronized (this) {
