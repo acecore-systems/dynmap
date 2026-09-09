@@ -1,6 +1,7 @@
 package org.dynmap.storage.aws_s3;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -21,6 +22,7 @@ import org.dynmap.MapType.ImageVariant;
 import org.dynmap.PlayerFaces.FaceType;
 import org.dynmap.WebAuthManager;
 import org.dynmap.storage.MapStorage;
+import org.dynmap.storage.StorageReadException;
 import org.dynmap.storage.MapStorageTile;
 import org.dynmap.storage.MapStorageTileEnumCB;
 import org.dynmap.storage.MapStorageBaseTileEnumCB;
@@ -72,14 +74,13 @@ public class AWSS3MapStorage extends MapStorage {
         		s3 = getConnection();
         		ListObjectsV2Request req = ListObjectsV2Request.builder().bucketName(bucketname).prefix(baseKey).maxKeys(1).build();
         	    ListObjectsV2Response rslt = s3.listObjectsV2(req);
-        		if ((rslt != null) && (rslt.getKeyCount() > 0))
-        			exists = true;
-            } catch (S3Exception x) {
-            	if (!x.getCode().equals("SignatureDoesNotMatch")) {	// S3 behavior when no object match....
-            		Log.severe("AWS Exception", x);
-            	}
-            } catch (StorageShutdownException x) {
-            	
+                if (rslt != null) {
+                    for (S3Object object : rslt.getContents()) {
+                        if (baseKey.equals(object.getKey())) exists = true;
+                    }
+                }
+            } catch (S3Exception | UncheckedIOException | StorageShutdownException x) {
+                throw new StorageReadException(x);
         	} finally {
         		releaseConnection(s3);
         	}
@@ -118,9 +119,8 @@ public class AWSS3MapStorage extends MapStorage {
     			}
         	} catch (NoSuchKeyException nskx) {
         		return null;	// Nominal case if it doesn't exist
-            } catch (S3Exception x) {
-        		Log.severe("AWS Exception", x);
-            } catch (StorageShutdownException x) {
+            } catch (S3Exception | UncheckedIOException | StorageShutdownException x) {
+                throw new StorageReadException(x);
         	} finally {
         		releaseConnection(s3);
         	}
@@ -143,14 +143,14 @@ public class AWSS3MapStorage extends MapStorage {
                     s3.putObject(req, RequestBody.fromBytes(Arrays.copyOf(encImage.buf, encImage.len)));
         		}
     			done = true;
-            } catch (S3Exception x) {
+            } catch (S3Exception | UncheckedIOException x) {
             	Log.severe("AWS Exception", x);
             } catch (StorageShutdownException x) {
         	} finally {
         		releaseConnection(s3);
         	}
             // Signal update for zoom out
-            if (zoom == 0) {
+            if (done && zoom == 0) {
                 world.enqueueZoomOutUpdate(this);
             }
             return done;
@@ -287,7 +287,7 @@ public class AWSS3MapStorage extends MapStorage {
 	        	return false;
 	        }
 	        rslt.getContents();
-        } catch (S3Exception s3x) {
+        } catch (S3Exception | UncheckedIOException s3x) {
     		Log.severe("AWS Exception", s3x);
     		return false;
         } catch (StorageShutdownException x) {
@@ -413,8 +413,8 @@ public class AWSS3MapStorage extends MapStorage {
 	    			done = true;
 	    		}
         	}
-        } catch (S3Exception x) {
-        	if (!x.getCode().equals("SignatureDoesNotMatch")) {	// S3 behavior when no object match....
+        } catch (S3Exception | UncheckedIOException x) {
+            if (!(x instanceof S3Exception) || !"SignatureDoesNotMatch".equals(((S3Exception)x).getCode())) {
 	        	Log.severe("AWS Exception", x);
 	        	Log.severe("req=" + req);
         	}
@@ -486,8 +486,8 @@ public class AWSS3MapStorage extends MapStorage {
 	    			done = true;
 	    		}
     		}
-        } catch (S3Exception x) {
-        	if (!x.getCode().equals("SignatureDoesNotMatch")) {	// S3 behavior when no object match....
+        } catch (S3Exception | UncheckedIOException x) {
+            if (!(x instanceof S3Exception) || !"SignatureDoesNotMatch".equals(((S3Exception)x).getCode())) {
 	        	Log.severe("AWS Exception", x);
 	        	Log.severe("req=" + req);
         	}
@@ -532,7 +532,7 @@ public class AWSS3MapStorage extends MapStorage {
                 s3.putObject(req, RequestBody.fromBytes(Arrays.copyOf(encImage.buf, encImage.len)));
     		}
 			done = true;
-        } catch (S3Exception x) {
+        } catch (S3Exception | UncheckedIOException x) {
         	Log.severe("AWS Exception", x);
         } catch (StorageShutdownException x) {
     	} finally {
@@ -558,8 +558,8 @@ public class AWSS3MapStorage extends MapStorage {
     	    ListObjectsV2Response rslt = s3.listObjectsV2(req);
     		if ((rslt != null) && (rslt.getKeyCount() > 0))
     			exists = true;
-        } catch (S3Exception x) {
-        	if (!x.getCode().equals("SignatureDoesNotMatch")) {	// S3 behavior when no object match....
+        } catch (S3Exception | UncheckedIOException x) {
+            if (!(x instanceof S3Exception) || !"SignatureDoesNotMatch".equals(((S3Exception)x).getCode())) {
         		Log.severe("AWS Exception", x);
         	}
         } catch (StorageShutdownException x) {
@@ -585,7 +585,7 @@ public class AWSS3MapStorage extends MapStorage {
                 s3.putObject(req, RequestBody.fromBytes(Arrays.copyOf(encImage.buf, encImage.len)));
     		}
 			done = true;
-        } catch (S3Exception x) {
+        } catch (S3Exception | UncheckedIOException x) {
         	Log.severe("AWS Exception", x);
         } catch (StorageShutdownException x) {
     	} finally {
@@ -615,7 +615,7 @@ public class AWSS3MapStorage extends MapStorage {
                 s3.putObject(req, RequestBody.fromString(content));
     		}
 			done = true;
-        } catch (S3Exception x) {
+        } catch (S3Exception | UncheckedIOException x) {
         	Log.severe("AWS Exception", x);
         } catch (StorageShutdownException x) {
     	} finally {
@@ -686,7 +686,7 @@ public class AWSS3MapStorage extends MapStorage {
     
     @Override
     public boolean setStandaloneFile(String fileid, BufferOutputStream content) {
-    	return setStaticWebFile("standalone/" + fileid, content);
+        return setWebFile("standalone/" + fileid, content, false);
     }
     // Test if storage needs static web files
     public boolean needsStaticWebFiles() {
@@ -699,6 +699,10 @@ public class AWSS3MapStorage extends MapStorage {
      * @return true if successful
      */
     public boolean setStaticWebFile(String fileid, BufferOutputStream content) {
+        return setWebFile(fileid, content, true);
+    }
+
+    private synchronized boolean setWebFile(String fileid, BufferOutputStream content, boolean verifyExisting) {
     	
     	boolean done = false;
     	String baseKey = prefix + fileid;
@@ -719,7 +723,7 @@ public class AWSS3MapStorage extends MapStorage {
     			byte[] digest = content.buf;
     			try {
     				MessageDigest md = MessageDigest.getInstance("MD5");
-    				md.update(content.buf);
+                    md.update(content.buf, 0, content.len);
     				digest = md.digest();
     			} catch (NoSuchAlgorithmException nsax) {
     				
@@ -728,6 +732,18 @@ public class AWSS3MapStorage extends MapStorage {
     		    if (Arrays.equals(digest, cacheval)) {
     		    	return true;
     		    }
+                // Cold-start verification only for bundled assets, never live update JSON.
+                // GET also repairs deleted assets on the next startup; no persisted blind cache.
+                if (cacheval == null && verifyExisting) {
+                    try {
+                        ResponseBytes<GetObjectResponse> existing = s3.getObjectAsBytes(
+                                GetObjectRequest.builder().bucketName(bucketname).key(baseKey).build());
+                        if (existing != null && Arrays.equals(existing.getBytes(), Arrays.copyOf(content.buf, content.len))) {
+                            standalone_cache.put(fileid, digest);
+                            return true;
+                        }
+                    } catch (NoSuchKeyException absent) { /* Initial publish or missing asset. */ }
+                }
     			String ct = "text/plain";
     			if (fileid.endsWith(".json")) {
     				ct = "application/json";
@@ -749,7 +765,7 @@ public class AWSS3MapStorage extends MapStorage {
         		standalone_cache.put(fileid, digest);
     		}
 			done = true;
-        } catch (S3Exception x) {
+        } catch (S3Exception | UncheckedIOException x) {
         	Log.severe("AWS Exception", x);
         } catch (StorageShutdownException x) {
     	} finally {
@@ -763,6 +779,7 @@ public class AWSS3MapStorage extends MapStorage {
         if (isShutdown) throw new StorageShutdownException();
         synchronized (cpool) {
             while (c == null) {
+                if (isShutdown) throw new StorageShutdownException();
                 for (int i = 0; i < cpool.length; i++) {    // See if available connection
                     if (cpool[i] != null) { // Found one
                         c = cpool[i];
@@ -772,11 +789,14 @@ public class AWSS3MapStorage extends MapStorage {
                 }
                 if (c == null) {
                     if (cpoolCount < POOLSIZE) {  // Still more we can have
-                        c = new DefaultS3ClientBuilder()
+                        c = RetryingS3Client.wrap(new DefaultS3ClientBuilder()
                         	    .credentialsProvider(() -> AwsBasicCredentials.create(access_key_id, secret_access_key))
                         	    .region(region)
-                        	    .httpClient(URLConnectionSdkHttpClient.create())
-                        	    .build();
+                            .httpClient(URLConnectionSdkHttpClient.withCustomizer(connection -> {
+                                    connection.setConnectTimeout(5000);
+                                    connection.setReadTimeout(10000);
+                                }))
+                            .build());
                         if (c == null) {
                         	Log.severe("Error creating S3 access client");      
                         	return null;
@@ -785,9 +805,10 @@ public class AWSS3MapStorage extends MapStorage {
                     }
                     else {
                         try {
-                            cpool.wait();
+                            cpool.wait(1000);
                         } catch (InterruptedException e) {
-                            return null;
+                            Thread.currentThread().interrupt();
+                            throw new StorageShutdownException();
                         }
                     }
                 }

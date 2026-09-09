@@ -12,12 +12,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.dynmap.storage.MapStorage;
 import org.dynmap.utils.BufferInputStream;
 import org.dynmap.utils.BufferOutputStream;
+import org.dynmap.utils.RetryingFileQueue;
 import org.dynmap.web.Json;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -50,69 +50,20 @@ public class JsonFileClientUpdateComponent extends ClientUpdateComponent {
     private MapStorage storage;
     private File baseStandaloneDir;
 
-    private static class FileToWrite {
-        String filename;
-        byte[] content;
-        boolean phpwrapper;
-        @Override
-        public boolean equals(Object o) {
-            if(o instanceof FileToWrite) {
-                return ((FileToWrite)o).filename.equals(this.filename);
-            }
-            return false;
-        }
-    }
-    private class FileProcessor implements Runnable {
-        public void run() {
-            while(true) {
-                FileToWrite f = null;
-                synchronized(lock) {
-                    if(files_to_write.isEmpty() == false) {
-                        f = files_to_write.removeFirst();
-                    }
-                    else {
-                        pending = null;
-                        return;
-                    }
-                }
-                BufferOutputStream buf = null;
-                if (f.content != null) {
-                    buf = new BufferOutputStream();
-                    if(f.phpwrapper) {
-                        buf.write("<?php /*\n".getBytes(cs_utf8));
-                    }
-                    buf.write(f.content);
-                    if(f.phpwrapper) {
-                        buf.write("\n*/ ?>\n".getBytes(cs_utf8));
-                    }
-                }
-                if (!storage.setStandaloneFile(f.filename, buf)) {
-                    Log.severe("Exception while writing JSON-file - " + f.filename);
-                }
-            }
-        }
-    }
-    private Object lock = new Object();
-    private FileProcessor pending;
-    private LinkedList<FileToWrite> files_to_write = new LinkedList<FileToWrite>();
+    private final RetryingFileQueue files = new RetryingFileQueue(
+            (name, content) -> storage.setStandaloneFile(name, content),
+            MapManager::scheduleDelayedJob,
+            name -> Log.severe("Exception while writing JSON-file - " + name + "; retry queued"));
 
     private void enqueueFileWrite(String filename, byte[] content, boolean phpwrap) {
-        FileToWrite ftw = new FileToWrite();
-        ftw.filename = filename;
-        ftw.content = content;
-        ftw.phpwrapper = phpwrap;
-        synchronized(lock) {
-            boolean didadd = false;
-            if(pending == null) {
-                didadd = true;
-                pending = new FileProcessor();
-            }
-            files_to_write.remove(ftw);
-            files_to_write.add(ftw);
-            if(didadd) {
-                MapManager.scheduleDelayedJob(new FileProcessor(), 0);
-            }
+        BufferOutputStream buf = null;
+        if (content != null) {
+            buf = new BufferOutputStream();
+            if (phpwrap) buf.write("<?php /*\n".getBytes(cs_utf8));
+            buf.write(content);
+            if (phpwrap) buf.write("\n*/ ?>\n".getBytes(cs_utf8));
         }
+        files.enqueue(filename, buf);
     }
     
     private static Charset cs_utf8 = Charset.forName("UTF-8");
@@ -274,9 +225,7 @@ public class JsonFileClientUpdateComponent extends ClientUpdateComponent {
         MapManager.scheduleDelayedJob(new Runnable() {
         	public void run() {
         		if (core.getDefaultMapStorage().needsStaticWebFiles()) {
-        			BufferOutputStream os = new BufferOutputStream();
-        			os.write(outputBytes);
-        			core.getDefaultMapStorage().setStaticWebFile("standalone/config.js", os);
+                    enqueueFileWrite("config.js", outputBytes, false);
         		}
         		else {
 	                File f = new File(baseStandaloneDir, "config.js");

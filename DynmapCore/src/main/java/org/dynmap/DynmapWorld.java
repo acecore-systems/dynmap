@@ -10,6 +10,7 @@ import org.dynmap.MapType.ImageEncoding;
 import org.dynmap.hdmap.TexturePack;
 import org.dynmap.storage.MapStorage;
 import org.dynmap.storage.MapStorageTile;
+import org.dynmap.storage.StorageReadException;
 import org.dynmap.utils.DynmapBufferedImage;
 import org.dynmap.utils.ImageIOManager;
 import org.dynmap.utils.MapChunkCache;
@@ -116,7 +117,10 @@ public abstract class DynmapWorld {
                 if(cancelled) return;
                 for (int varIdx = 0; varIdx < var.length; varIdx++) {
                     MapStorageTile tile = storage.getTile(this, mt, c.x, c.y, c.zoomlevel, var[varIdx]);
-                    processZoomFile(mts, tile, varIdx == 0);
+                    if (!processZoomFile(mts, tile, varIdx == 0)) {
+                        // Accumulator is separate from this pass: no tight retry loop.
+                        mts.setZoomOutInv(tile.x, tile.y, tile.zoom);
+                    }
                 }
             }
         }
@@ -132,7 +136,7 @@ public abstract class DynmapWorld {
 
     private static final int[] stepseq = { 3, 1, 2, 0 };
 
-    private void processZoomFile(MapTypeState mts, MapStorageTile tile, boolean firstVariant) {
+    private boolean processZoomFile(MapTypeState mts, MapStorageTile tile, boolean firstVariant) {
         long mostRecentTimestamp = 0;
         int step = 1 << tile.zoom;
         MapStorageTile ztile = tile.getZoomOutTile();
@@ -148,6 +152,7 @@ public abstract class DynmapWorld {
         /* create image buffer */
         kzIm = DynmapBufferedImage.allocateBufferedImage(width, height);
         zIm = kzIm.buf_img;
+        try {
         for(int i = 0; i < 4; i++) {
             boolean doblit = true;
             int tx1 = tx + step * (1 & stepseq[i]);
@@ -236,22 +241,28 @@ public abstract class DynmapWorld {
         try {
             MapManager mm = MapManager.mapman;
             if(mm == null)
-                return;
+                return false;
             long crc = MapStorage.calculateImageHashCode(kzIm.argb_buf, 0, kzIm.argb_buf.length); /* Get hash of tile */
             if(blank) {
                 if (ztile.exists()) {
-                    ztile.delete();
+                    if (!ztile.delete()) return false;
                     MapManager.mapman.pushUpdate(this, new Client.Tile(ztile.getURI()));
                     enqueueZoomOutUpdate(ztile);
                 }
             }
             else /* if (!ztile.matchesHashCode(crc)) */ {
-                ztile.write(crc, zIm, (mostRecentTimestamp == 0)? System.currentTimeMillis() : mostRecentTimestamp);
+                if (!ztile.write(crc, zIm, (mostRecentTimestamp == 0)? System.currentTimeMillis() : mostRecentTimestamp)) return false;
                 MapManager.mapman.pushUpdate(this, new Client.Tile(ztile.getURI()));
                 enqueueZoomOutUpdate(ztile);
             }
         } finally {
             ztile.releaseWriteLock();
+        }
+        return true;
+        } catch (StorageReadException ex) {
+            Log.warning("Storage read failed; retaining zoom update for " + tile.getURI());
+            return false;
+        } finally {
             DynmapBufferedImage.freeBufferedImage(kzIm);
         }
     }
