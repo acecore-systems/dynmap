@@ -182,6 +182,17 @@ public class MapTypeState {
                 }
                 zoomOutInvAccum.set(i, tf);
             }
+            // A shutdown can interrupt the active pass. The next startZoomOutIter()
+            // replaces that pass with the accumulator, so retain both halves there.
+            for (int i = 0; i < zoomOutInv.size(); i++) {
+                TileFlags active = zoomOutInv.get(i);
+                if (active != null) {
+                    TileFlags accumulated = zoomOutInvAccum.get(i);
+                    if (accumulated == null) zoomOutInvAccum.set(i, active);
+                    else accumulated.union(active);
+                    zoomOutInv.set(i, null);
+                }
+            }
         }
     }
 

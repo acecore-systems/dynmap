@@ -35,6 +35,20 @@ public class ZoomStorageFailureTest {
         state.setZoomOutInv(0,0,0);
     }
     @After public void cleanup() { MapManager.mapman = previous; }
+    @Test public void restartRetainsBothActiveAndAccumulatedZoomWork() {
+        state.startZoomOutIter();
+        state.setZoomOutInv(2,2,0);
+        MapTypeState restored = new MapTypeState(world,state.type);
+        restored.restoreZoomOut(state.saveZoomOut());
+        restored.startZoomOutIter();
+        MapTypeState.ZoomOutCoord coordinate = new MapTypeState.ZoomOutCoord();
+        int count = 0;
+        while (restored.nextZoomOutInv(coordinate)) {
+            restored.clearZoomOutInv(coordinate.x,coordinate.y,coordinate.zoomlevel);
+            assertTrue(++count <= 2);
+        }
+        assertEquals(2,count);
+    }
     @Test public void failedReadPreservesParentAndRetriesNextPass() {
         when(child.read()).thenThrow(new StorageReadException(new IOException()));
         world.freshenZoomOutFiles();
