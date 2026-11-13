@@ -1,0 +1,83 @@
+version: 2
+
+# Minor/patch updates are grouped; major updates remain separate for review.
+# List modules explicitly because settings.gradle uses dynamic include expressions.
+updates:
+  - package-ecosystem: gradle
+    directories:
+      - "/DynmapCore"
+      - "/DynmapCoreAPI"
+      - "/"
+      - "/bukkit-helper-113-2"
+      - "/bukkit-helper-114-1"
+      - "/bukkit-helper-115"
+      - "/bukkit-helper-116-2"
+      - "/bukkit-helper-116-3"
+      - "/bukkit-helper-116-4"
+      - "/bukkit-helper-116"
+      - "/bukkit-helper-117"
+      - "/bukkit-helper-118-2"
+      - "/bukkit-helper-118"
+      - "/bukkit-helper-119-3"
+      - "/bukkit-helper-119-4"
+      - "/bukkit-helper-119"
+      - "/bukkit-helper-120-2"
+      - "/bukkit-helper-120-4"
+      - "/bukkit-helper-120-5"
+      - "/bukkit-helper-120"
+      - "/bukkit-helper-121-10"
+      - "/bukkit-helper-121-11"
+      - "/bukkit-helper-121-3"
+      - "/bukkit-helper-121-4"
+      - "/bukkit-helper-121-5"
+      - "/bukkit-helper-121-6"
+      - "/bukkit-helper-121"
+      - "/bukkit-helper-26-2"
+      - "/bukkit-helper"
+      - "/dynmap-api"
+      - "/fabric-1.14.4"
+      - "/fabric-1.15.2"
+      - "/fabric-1.16.4"
+      - "/fabric-1.17.1"
+      - "/fabric-1.18.2"
+      - "/fabric-1.19.4"
+      - "/fabric-1.20.6"
+      - "/fabric-1.21.11"
+      - "/fabric-1.21.6"
+      - "/fabric-1.21.9-10"
+      - "/forge-1.12.2"
+      - "/forge-1.14.4"
+      - "/forge-1.15.2"
+      - "/forge-1.16.5"
+      - "/forge-1.17.1"
+      - "/forge-1.18.2"
+      - "/forge-1.19.3"
+      - "/forge-1.20.6"
+      - "/forge-1.21.10"
+      - "/forge-1.21.11"
+      - "/forge-1.21.6"
+      - "/oldbuilds"
+      - "/spigot"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    groups:
+      gradle-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    groups:
+      github-actions-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
