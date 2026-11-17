@@ -7,6 +7,8 @@ pluginManagement {
 }
 
 rootProject.name = 'dynmap-common'
+include ':jetty-http-patched'
+project(':jetty-http-patched').projectDir = file('dependency-patches/jetty-http')
 
 // Focused builds avoid configuring unrelated mod loaders; the default keeps upstream scope.
 def platform = providers.gradleProperty('dynmapPlatform').getOrElse('all')

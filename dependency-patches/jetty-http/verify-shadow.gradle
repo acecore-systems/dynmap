@@ -1,0 +1,57 @@
+import java.util.zip.ZipFile
+
+// Both the modern Core and Java 8 Forge paths must shade the verified replacement.
+shadowJar {
+    dependsOn ':jetty-http-patched:verifyPatchedJettyHttp'
+    doFirst {
+        def original = project.configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'org.eclipse.jetty' && it.moduleVersion.id.name == 'jetty-http'
+        }
+        if (original != null) {
+            throw new GradleException('The unpatched Jetty HTTP artifact remains in the runtime classpath')
+        }
+        def patched = project(':jetty-http-patched').tasks.getByName('jar')
+        File archive = patched.hasProperty('archiveFile') ? patched.archiveFile.get().asFile : patched.archivePath
+        if (!includedDependencies.files.collect { it.canonicalFile }.contains(archive.canonicalFile)) {
+            throw new GradleException('Shadow does not include the patched Jetty HTTP artifact')
+        }
+    }
+    doLast { task ->
+        def patched = project(':jetty-http-patched').tasks.getByName('jar')
+        File input = patched.hasProperty('archiveFile') ? patched.archiveFile.get().asFile : patched.archivePath
+        File output = task.hasProperty('archiveFile') ? task.archiveFile.get().asFile : task.archivePath
+        Set<String> expected
+        new ZipFile(input).withCloseable { zip ->
+            expected = zip.entries().findAll {
+                it.name == 'org/eclipse/jetty/http/HttpParser.class' ||
+                    it.name.startsWith('org/eclipse/jetty/http/HttpParser$')
+            }.collect { it.name.replace('org/eclipse/jetty/', 'org/dynmap/jetty/') } as Set
+        }
+        new ZipFile(output).withCloseable { zip ->
+            List<String> names = zip.entries().collect { it.name }
+            List<String> actual = names.findAll {
+                it == 'org/dynmap/jetty/http/HttpParser.class' ||
+                    it.startsWith('org/dynmap/jetty/http/HttpParser$')
+            }
+            if (actual.size() != expected.size() || (actual as Set) != expected ||
+                names.any { it.startsWith('org/eclipse/jetty/http/HttpParser') }) {
+                throw new GradleException('The final Shadow JAR has missing, duplicate, or unrelocated parser classes')
+            }
+            expected.each { path ->
+                byte[] bytes = zip.getInputStream(zip.getEntry(path)).bytes
+                if (((bytes[6] & 255) << 8 | (bytes[7] & 255)) != 52) {
+                    throw new GradleException('The final parser classes must remain Java 8 compatible')
+                }
+            }
+            byte[] parser = zip.getInputStream(zip.getEntry('org/dynmap/jetty/http/HttpParser.class')).bytes
+            String constants = new String(parser, 'ISO-8859-1')
+            if (!constants.contains('parseChunkSize') || !constants.contains('CHUNK_END')) {
+                throw new GradleException('The final parser is missing the backported chunk state machine')
+            }
+            if (zip.getEntry('META-INF/acecore/BACKPORT.md') == null) {
+                throw new GradleException('Jetty backport provenance is missing from the final Shadow JAR')
+            }
+        }
+        logger.lifecycle("Verified ${output.name}: all ${expected.size()} patched parser classes are relocated")
+    }
+}
