@@ -1,9 +1,23 @@
 version: 2
+registries:
+  forge:
+    type: maven-repository
+    url: https://maven.minecraftforge.net
+  sponge:
+    type: maven-repository
+    url: https://repo.spongepowered.org/repository/maven-public
+  mikeprimm:
+    type: maven-repository
+    url: https://repo.mikeprimm.com
 
 # Minor/patch updates are grouped; major updates remain separate for review.
 # List modules explicitly because settings.gradle uses dynamic include expressions.
 updates:
   - package-ecosystem: gradle
+    registries:
+      - forge
+      - sponge
+      - mikeprimm
     directories:
       - "/DynmapCore"
       - "/DynmapCoreAPI"
