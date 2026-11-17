@@ -37,7 +37,7 @@ dependencies {
     implementation 'io.github.linktosriram.s3lite:http-client-spi:0.0.2-SNAPSHOT'
     implementation 'io.github.linktosriram.s3lite:util:0.0.2-SNAPSHOT'
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
-    implementation 'com.sun.xml.bind:jaxb-impl:3.0.0'
+    implementation 'com.sun.xml.bind:jaxb-impl:4.0.9'
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     implementation 'org.spongepowered:spongeapi:7.0.0'
 }
