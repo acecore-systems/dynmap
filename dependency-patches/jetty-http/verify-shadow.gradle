@@ -16,10 +16,10 @@ shadowJar {
             throw new GradleException('Shadow does not include the patched Jetty HTTP artifact')
         }
     }
-    doLast {
+    doLast { task ->
         def patched = project(':jetty-http-patched').tasks.getByName('jar')
         File input = patched.hasProperty('archiveFile') ? patched.archiveFile.get().asFile : patched.archivePath
-        File output = hasProperty('archiveFile') ? archiveFile.get().asFile : archivePath
+        File output = task.hasProperty('archiveFile') ? task.archiveFile.get().asFile : task.archivePath
         Set<String> expected
         new ZipFile(input).withCloseable { zip ->
             expected = zip.entries().findAll {
