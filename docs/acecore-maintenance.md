@@ -9,7 +9,7 @@ Apache-2.0 の LICENSE、上流 README のカスタムビルド・商標・配�
 
 ## ビルド
 
-Git、JDK 21、Gradle wrapper 8.14 を使います。Windowsでは `bash gradlew` を
+Git、JDK 21、Gradle wrapper 8.14.7 を使います。Windowsでは `bash gradlew` を
 `gradlew.bat` に読み替えてください。
 
 ```sh
