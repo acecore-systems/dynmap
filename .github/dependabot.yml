@@ -243,6 +243,10 @@ updates:
       time: "05:00"
       timezone: Asia/Tokyo
     open-pull-requests-limit: 5
+    # Dependabot cannot determine release dates for these Forge artifacts.
+    cooldown:
+      default-days: 3
+      exclude: ["net.minecraftforge:forge"]
     ignore:
       # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
       - dependency-name: "gradle-wrapper"
@@ -276,6 +280,10 @@ updates:
       time: "05:00"
       timezone: Asia/Tokyo
     open-pull-requests-limit: 5
+    # Dependabot cannot determine release dates for these Forge artifacts.
+    cooldown:
+      default-days: 3
+      exclude: ["net.minecraftforge:forge"]
     ignore:
       # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
       - dependency-name: "gradle-wrapper"
@@ -309,6 +317,10 @@ updates:
       time: "05:00"
       timezone: Asia/Tokyo
     open-pull-requests-limit: 5
+    # Dependabot cannot determine release dates for these Forge artifacts.
+    cooldown:
+      default-days: 3
+      exclude: ["net.minecraftforge:forge"]
     ignore:
       # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
       - dependency-name: "gradle-wrapper"
@@ -342,6 +354,10 @@ updates:
       time: "05:00"
       timezone: Asia/Tokyo
     open-pull-requests-limit: 5
+    # Dependabot cannot determine release dates for these Forge artifacts.
+    cooldown:
+      default-days: 3
+      exclude: ["net.minecraftforge:forge"]
     ignore:
       # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
       - dependency-name: "gradle-wrapper"
@@ -375,6 +391,10 @@ updates:
       time: "05:00"
       timezone: Asia/Tokyo
     open-pull-requests-limit: 5
+    # Dependabot cannot determine release dates for these Forge artifacts.
+    cooldown:
+      default-days: 3
+      exclude: ["net.minecraftforge:forge"]
     ignore:
       # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
       - dependency-name: "gradle-wrapper"
@@ -408,6 +428,10 @@ updates:
       time: "05:00"
       timezone: Asia/Tokyo
     open-pull-requests-limit: 5
+    # Dependabot cannot determine release dates for these Forge artifacts.
+    cooldown:
+      default-days: 3
+      exclude: ["net.minecraftforge:forge"]
     ignore:
       # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
       - dependency-name: "gradle-wrapper"
@@ -441,6 +465,10 @@ updates:
       time: "05:00"
       timezone: Asia/Tokyo
     open-pull-requests-limit: 5
+    # Dependabot cannot determine release dates for these Forge artifacts.
+    cooldown:
+      default-days: 3
+      exclude: ["net.minecraftforge:forge"]
     ignore:
       # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
       - dependency-name: "gradle-wrapper"
@@ -474,6 +502,10 @@ updates:
       time: "05:00"
       timezone: Asia/Tokyo
     open-pull-requests-limit: 5
+    # Dependabot cannot determine release dates for these Forge artifacts.
+    cooldown:
+      default-days: 3
+      exclude: ["net.minecraftforge:forge"]
     ignore:
       # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
       - dependency-name: "gradle-wrapper"
@@ -507,6 +539,10 @@ updates:
       time: "05:00"
       timezone: Asia/Tokyo
     open-pull-requests-limit: 5
+    # Dependabot cannot determine release dates for these Forge artifacts.
+    cooldown:
+      default-days: 3
+      exclude: ["net.minecraftforge:forge"]
     ignore:
       # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
       - dependency-name: "gradle-wrapper"
@@ -522,6 +558,9 @@ updates:
       # Only Forge releases targeting Minecraft 1.21.10 use this module's mappings and APIs.
       - dependency-name: "net.minecraftforge:forge"
         versions: ["(,1.21.10)", "[1.21.11,)"]
+      # Keep the validator aligned with the EventBus version in the Forge userdev.
+      - dependency-name: "net.minecraftforge:eventbus-validator"
+        versions: ["(7.0.1,)"]
     groups:
       forge-1-21-10-minor-patch:
         patterns: ["*"]
@@ -540,6 +579,10 @@ updates:
       time: "05:00"
       timezone: Asia/Tokyo
     open-pull-requests-limit: 5
+    # Dependabot cannot determine release dates for these Forge artifacts.
+    cooldown:
+      default-days: 3
+      exclude: ["net.minecraftforge:forge"]
     ignore:
       # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
       - dependency-name: "gradle-wrapper"
@@ -554,7 +597,11 @@ updates:
         versions: ["[4.0.0,)"]
       # Only Forge releases targeting Minecraft 1.21.11 use this module's mappings and APIs.
       - dependency-name: "net.minecraftforge:forge"
-        versions: ["(,1.21.11)", "[1.21.12,)"]
+        # 61.2.5 fails in ForgeGradle with duplicate mcp/client/Start.class.
+        versions: ["(,1.21.11)", "[1.21.12,)", "1.21.11-61.2.5"]
+      # Keep the validator aligned with the EventBus version in the Forge userdev.
+      - dependency-name: "net.minecraftforge:eventbus-validator"
+        versions: ["(7.0-beta.12,)"]
     groups:
       forge-1-21-11-minor-patch:
         patterns: ["*"]
