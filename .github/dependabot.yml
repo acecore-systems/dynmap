@@ -68,6 +68,9 @@ updates:
       # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
       - dependency-name: "gradle-wrapper"
         update-types: ["version-update:semver-major"]
+      # 0.7.0 targets Minecraft 26.1, not the older Fabric modules in this repository.
+      - dependency-name: "me.lucko:fabric-permissions-api"
+        versions: ["0.7.0"]
     groups:
       gradle-minor-patch:
         patterns: ["*"]
