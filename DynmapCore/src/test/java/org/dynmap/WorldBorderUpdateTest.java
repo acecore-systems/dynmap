@@ -30,8 +30,7 @@ public class WorldBorderUpdateTest {
         listeners = mock(DynmapListenerManager.class);
         core.listenerManager = listeners;
         DynmapServerInterface server = mock(DynmapServerInterface.class);
-        doCallRealMethod().when(core).setServer(server);
-        core.setServer(server);
+        when(core.getServer()).thenReturn(server);
         when(server.callSyncMethod(any())).thenAnswer(invocation -> {
             Callable<?> task = invocation.getArgument(0);
             // Let exceptions fail the test instead of being swallowed by the job's logger.
