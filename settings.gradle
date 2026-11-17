@@ -77,3 +77,6 @@ modules.findAll { name ->
     platform == 'all' || name in ['DynmapCore', 'DynmapCoreAPI'] ||
         (platform in ['spigot', 'spigot26'] && (name in ['spigot', 'dynmap-api'] || name.startsWith('bukkit-helper')))
 }.each { name -> include ':' + name }
+
+include ':jetty-security-patched'
+project(':jetty-security-patched').projectDir = file('dependency-patches/jetty-security')

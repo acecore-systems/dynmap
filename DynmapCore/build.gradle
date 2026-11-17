@@ -15,6 +15,7 @@ java {
 
 dependencies {
     implementation project(':jetty-http-patched')
+    implementation project(':jetty-security-patched')
     implementation project(':DynmapCoreAPI')
     implementation 'javax.servlet:javax.servlet-api:4.0.1'
     implementation 'org.eclipse.jetty:jetty-server:9.4.58.v20250814'
@@ -106,8 +107,11 @@ artifacts {
 
 configurations.all {
     exclude group: 'org.eclipse.jetty', module: 'jetty-http'
+    exclude group: 'org.eclipse.jetty', module: 'jetty-security'
 }
 
 apply from: project(':jetty-http-patched').file('verify-shadow.gradle')
 
 test.dependsOn ':jetty-http-patched:verifyPatchedJettyHttp'
+
+test.dependsOn ':jetty-security-patched:verifyPatchedJettySecurity'

@@ -1,164 +1,25 @@
-import java.security.MessageDigest
-import java.util.zip.ZipFile
-import org.gradle.util.GradleVersion
-
 group = 'org.eclipse.jetty'
 version = '9.4.58.v20250814-acecore.2'
 description = 'Jetty HTTP 9.4.58 with documented upstream chunk and URI backports'
 
-// targetCompatibility alone can emit calls to newer JDK APIs such as ByteBuffer.position().
-tasks.withType(JavaCompile) {
-    if (GradleVersion.current() >= GradleVersion.version('6.6')) {
-        options.release.set(8)
-    }
-}
-
-configurations {
-    upstreamBinary { transitive = false }
-    upstreamSources { transitive = false }
-}
+ext.backportUpstreamVersion = '9.4.58.v20250814'
+ext.backportHashes = [
+    binary: '8f49b8583fc8dbbfe3a0ba80a04c97df64ebabca2981b56ee403c989aba9d4da',
+    sources: 'd132a5af1abd76736f259c37b725f0d056f4162284425e8d74ebaf1e38ec0377'
+]
+ext.backportSources = [
+    'org/eclipse/jetty/http/HttpParser': '2b5a66ebc03eb372ca31031da9e61e6778fc1a47fe3da88cd69c28bb9139d02c',
+    'org/eclipse/jetty/http/HttpURI': '3343145baa52230aa67af9e003f87094e4ff5d972482ef2c98db45b9ad4300b7'
+]
+ext.backportCommits = 'ff9eb742492d6dc3191bcd49668b1bce1e620d57 389ffcbc90f5b92ae179ce276ba0fbf3f4befbf1 553b59eff83461a7e488e592bcc3bb958a76f13f cccfd20bccaead2352fa809b3271b141d8e090ca'
+ext.backportProvenancePath = 'META-INF/acecore'
+ext.backportVerificationTask = 'verifyPatchedJettyHttp'
+ext.backportPreparationTask = 'prepareJettyHttp'
+apply from: '../jetty-backport.gradle'
 
 dependencies {
     upstreamBinary 'org.eclipse.jetty:jetty-http:9.4.58.v20250814'
     upstreamSources 'org.eclipse.jetty:jetty-http:9.4.58.v20250814:sources'
-    compileOnly files(configurations.upstreamBinary)
     implementation 'org.eclipse.jetty:jetty-io:9.4.58.v20250814'
     implementation 'org.eclipse.jetty:jetty-util:9.4.58.v20250814'
-    testImplementation 'junit:junit:4.13.2'
 }
-
-def digest = { byte[] bytes -> MessageDigest.getInstance('SHA-256').digest(bytes).encodeHex().toString() }
-def expected = [
-    binary: '8f49b8583fc8dbbfe3a0ba80a04c97df64ebabca2981b56ee403c989aba9d4da',
-    sources: 'd132a5af1abd76736f259c37b725f0d056f4162284425e8d74ebaf1e38ec0377',
-    parser: '2b5a66ebc03eb372ca31031da9e61e6778fc1a47fe3da88cd69c28bb9139d02c',
-    uri: '3343145baa52230aa67af9e003f87094e4ff5d972482ef2c98db45b9ad4300b7'
-]
-def compiledDirectory = { compileJava.hasProperty('destinationDirectory') ? compileJava.destinationDirectory.get().asFile : compileJava.destinationDir }
-
-def outputSources = file("$buildDir/generated/sources/backport")
-sourceSets.main.java.srcDirs = [outputSources]
-sourceSets.test.compileClasspath += files(configurations.upstreamBinary)
-sourceSets.test.runtimeClasspath += files(jar)
-
-task prepareJettyHttp {
-    inputs.files(configurations.upstreamBinary, configurations.upstreamSources, 'HttpParser.patch', 'HttpURI.patch')
-    outputs.dir(outputSources)
-    doLast {
-        File original = configurations.upstreamBinary.singleFile
-        File sources = configurations.upstreamSources.singleFile
-        if (digest(original.bytes) != expected.binary || digest(sources.bytes) != expected.sources) {
-            throw new GradleException('Jetty binary or source archive SHA-256 differs from the reviewed upstream release')
-        }
-        [HttpParser: expected.parser, HttpURI: expected.uri].each { type, sourceHash ->
-            String path = "org/eclipse/jetty/http/${type}.java"
-            String originalText
-            new ZipFile(sources).withCloseable { zip ->
-                originalText = zip.getInputStream(zip.getEntry(path)).getText('UTF-8')
-            }
-            if (digest(originalText.getBytes('UTF-8')) != sourceHash) {
-                throw new GradleException('The original Jetty HTTP source differs from the reviewed upstream source')
-            }
-            List<String> lines = originalText.readLines()
-            List<String> result = []
-            int cursor = 0
-            boolean inHunk = false
-            file("${type}.patch").eachLine('UTF-8') { line ->
-                def header = line =~ /^@@ -(\d+)(?:,\d+)? \+\d+(?:,\d+)? @@.*$/
-                if (header.matches()) {
-                    int target = header[0][1].toInteger() - 1
-                    if (target < cursor) {
-                        throw new GradleException('Patch hunks overlap')
-                    }
-                    result.addAll(lines.subList(cursor, target))
-                    cursor = target
-                    inHunk = true
-                } else if (inHunk) {
-                    char kind = line.charAt(0)
-                    String value = line.substring(1)
-                    if (kind == (' ' as char) || kind == ('-' as char)) {
-                        if (cursor >= lines.size() || lines[cursor] != value) {
-                            throw new GradleException("Patch context mismatch at source line ${cursor + 1}")
-                        }
-                        cursor++
-                    }
-                    if (kind == (' ' as char) || kind == ('+' as char)) {
-                        result.add(value)
-                    }
-                }
-            }
-            result.addAll(lines.subList(cursor, lines.size()))
-            File generated = new File(outputSources, path)
-            generated.parentFile.mkdirs()
-            generated.setText(result.join('\n') + '\n', 'UTF-8')
-        }
-    }
-}
-
-compileJava.dependsOn prepareJettyHttp
-test {
-    dependsOn jar
-    if (project.hasProperty('jettyTestJavaHome')) {
-        String suffix = System.getProperty('os.name').startsWith('Windows') ? '.exe' : ''
-        executable = file("${project.property('jettyTestJavaHome')}/bin/java${suffix}").absolutePath
-    }
-    useJUnit()
-    testLogging { events 'failed', 'passed'; exceptionFormat 'full' }
-}
-
-jar {
-    preserveFileTimestamps = false
-    reproducibleFileOrder = true
-    dependsOn prepareJettyHttp
-    from({ zipTree(configurations.upstreamBinary.singleFile) }) {
-        exclude 'org/eclipse/jetty/http/HttpParser.class'
-        exclude 'org/eclipse/jetty/http/HttpParser$*.class'
-        exclude 'org/eclipse/jetty/http/HttpURI.class'
-        exclude 'org/eclipse/jetty/http/HttpURI$*.class'
-        exclude 'META-INF/MANIFEST.MF'
-    }
-    from('BACKPORT.md') { into 'META-INF/acecore' }
-    from(['HttpParser.patch', 'HttpURI.patch']) { into 'META-INF/acecore' }
-    manifest {
-        attributes('Implementation-Title': 'Jetty HTTP with Acecore upstream backport',
-                   'Implementation-Version': project.version,
-                   'Jetty-Upstream-Version': '9.4.58.v20250814',
-                   'Jetty-Backport-Commits': 'ff9eb742492d6dc3191bcd49668b1bce1e620d57 389ffcbc90f5b92ae179ce276ba0fbf3f4befbf1 553b59eff83461a7e488e592bcc3bb958a76f13f cccfd20bccaead2352fa809b3271b141d8e090ca')
-    }
-}
-
-task verifyPatchedJettyHttp(dependsOn: [jar, test]) {
-    doLast {
-        File patched = jar.hasProperty('archiveFile') ? jar.archiveFile.get().asFile : jar.archivePath
-        Set<String> compiled = fileTree(compiledDirectory()).files.collect {
-            compiledDirectory().toPath().relativize(it.toPath()).toString().replace('\\', '/')
-        } as Set
-        if (!compiled.containsAll(['org/eclipse/jetty/http/HttpParser.class', 'org/eclipse/jetty/http/HttpURI.class'])) {
-            throw new GradleException('Patched HTTP parser or URI was not compiled')
-        }
-        new ZipFile(patched).withCloseable { zip ->
-            List<String> names = zip.entries().collect { it.name }
-            if (names.size() != (names as Set).size()) {
-                throw new GradleException('Duplicate entries in the patched Jetty HTTP JAR')
-            }
-            Set<String> replacements = names.findAll {
-                it ==~ /org\/eclipse\/jetty\/http\/(HttpParser|HttpURI)(\$.*)?\.class/
-            } as Set
-            if (replacements != compiled) {
-                throw new GradleException('Patched parser/URI nested classes are incomplete or contain an upstream remnant')
-            }
-            compiled.each { path ->
-                byte[] packaged = zip.getInputStream(zip.getEntry(path)).bytes
-                if (digest(packaged) != digest(new File(compiledDirectory(), path).bytes)) {
-                    throw new GradleException("Unpatched parser/URI bytecode remains at ${path}")
-                }
-                if (((packaged[6] & 255) << 8 | (packaged[7] & 255)) != 52) {
-                    throw new GradleException('The parser must be compiled for Java 8')
-                }
-            }
-        }
-        logger.lifecycle("Verified patched Jetty HTTP ${project.version}: ${digest(patched.bytes)}")
-    }
-}
-
-check.dependsOn verifyPatchedJettyHttp

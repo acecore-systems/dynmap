@@ -6,3 +6,6 @@ project(':forge-1.12.2').projectDir = "$rootDir/../forge-1.12.2" as File
 
 include ':jetty-http-patched'
 project(':jetty-http-patched').projectDir = file('../dependency-patches/jetty-http')
+
+include ':jetty-security-patched'
+project(':jetty-security-patched').projectDir = file('../dependency-patches/jetty-security')

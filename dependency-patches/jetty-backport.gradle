@@ -1,0 +1,154 @@
+import java.security.MessageDigest
+import java.util.zip.ZipFile
+import org.gradle.util.GradleVersion
+
+// targetCompatibility alone can emit calls to newer JDK APIs such as ByteBuffer.position().
+tasks.withType(JavaCompile) {
+    if (GradleVersion.current() >= GradleVersion.version('6.6')) {
+        options.release.set(8)
+    }
+}
+
+configurations {
+    upstreamBinary { transitive = false }
+    upstreamSources { transitive = false }
+}
+
+dependencies {
+    compileOnly files(configurations.upstreamBinary)
+    testImplementation 'junit:junit:4.13.2'
+}
+
+def digest = { byte[] bytes -> MessageDigest.getInstance('SHA-256').digest(bytes).encodeHex().toString() }
+
+def compiledDirectory = { compileJava.hasProperty('destinationDirectory') ? compileJava.destinationDirectory.get().asFile : compileJava.destinationDir }
+
+def outputSources = file("$buildDir/generated/sources/backport")
+def replacedClassPatterns = backportSources.keySet().collectMany { classPath ->
+    [classPath + '.class', classPath + '$*.class']
+}
+sourceSets.main.java.srcDirs = [outputSources]
+sourceSets.test.compileClasspath += files(configurations.upstreamBinary)
+sourceSets.test.runtimeClasspath += files(jar)
+
+def prepareSources = tasks.create(name: backportPreparationTask) {
+    inputs.files(configurations.upstreamBinary, configurations.upstreamSources, backportSources.keySet().collect { it.tokenize('/').last() + '.patch' })
+    inputs.property('backportHashes', backportHashes)
+    inputs.property('backportSources', backportSources)
+    outputs.dir(outputSources)
+    doLast {
+        File original = configurations.upstreamBinary.singleFile
+        File sources = configurations.upstreamSources.singleFile
+        if (digest(original.bytes) != backportHashes.binary || digest(sources.bytes) != backportHashes.sources) {
+            throw new GradleException('Jetty binary or source archive SHA-256 differs from the reviewed upstream release')
+        }
+        backportSources.each { classPath, sourceHash ->
+            String path = "${classPath}.java"
+            String originalText
+            new ZipFile(sources).withCloseable { zip ->
+                originalText = zip.getInputStream(zip.getEntry(path)).getText('UTF-8')
+            }
+            if (digest(originalText.getBytes('UTF-8')) != sourceHash) {
+                throw new GradleException('The original Jetty source differs from the reviewed upstream source')
+            }
+            List<String> lines = originalText.readLines()
+            List<String> result = []
+            int cursor = 0
+            boolean inHunk = false
+            file(classPath.tokenize('/').last() + '.patch').eachLine('UTF-8') { line ->
+                def header = line =~ /^@@ -(\d+)(?:,\d+)? \+\d+(?:,\d+)? @@.*$/
+                if (header.matches()) {
+                    int target = header[0][1].toInteger() - 1
+                    if (target < cursor) {
+                        throw new GradleException('Patch hunks overlap')
+                    }
+                    result.addAll(lines.subList(cursor, target))
+                    cursor = target
+                    inHunk = true
+                } else if (inHunk) {
+                    char kind = line.charAt(0)
+                    String value = line.substring(1)
+                    if (kind == (' ' as char) || kind == ('-' as char)) {
+                        if (cursor >= lines.size() || lines[cursor] != value) {
+                            throw new GradleException("Patch context mismatch at source line ${cursor + 1}")
+                        }
+                        cursor++
+                    }
+                    if (kind == (' ' as char) || kind == ('+' as char)) {
+                        result.add(value)
+                    }
+                }
+            }
+            result.addAll(lines.subList(cursor, lines.size()))
+            File generated = new File(outputSources, path)
+            generated.parentFile.mkdirs()
+            generated.setText(result.join('\n') + '\n', 'UTF-8')
+        }
+    }
+}
+
+compileJava.dependsOn prepareSources
+compileJava.options.incremental = false
+test {
+    dependsOn jar
+    if (project.hasProperty('jettyTestJavaHome')) {
+        String suffix = System.getProperty('os.name').startsWith('Windows') ? '.exe' : ''
+        executable = file("${project.property('jettyTestJavaHome')}/bin/java${suffix}").absolutePath
+    }
+    useJUnit()
+    testLogging { events 'failed', 'passed'; exceptionFormat 'full' }
+}
+
+jar {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+    dependsOn prepareSources
+    from({ zipTree(configurations.upstreamBinary.singleFile) }) {
+        exclude replacedClassPatterns
+        exclude 'META-INF/MANIFEST.MF'
+    }
+    from('BACKPORT.md') { into backportProvenancePath }
+    from(backportSources.keySet().collect { it.tokenize('/').last() + '.patch' }) { into backportProvenancePath }
+    manifest {
+        attributes('Implementation-Title': project.description,
+                   'Implementation-Version': project.version,
+                   'Jetty-Upstream-Version': backportUpstreamVersion,
+                   'Jetty-Backport-Commits': backportCommits)
+    }
+}
+
+def verification = tasks.create(name: backportVerificationTask, dependsOn: [jar, test]) {
+    doLast {
+        File patched = jar.hasProperty('archiveFile') ? jar.archiveFile.get().asFile : jar.archivePath
+        Set<String> compiled = fileTree(compiledDirectory()).files.collect {
+            compiledDirectory().toPath().relativize(it.toPath()).toString().replace('\\', '/')
+        } as Set
+        if (!compiled.containsAll(backportSources.keySet().collect { it + '.class' })) {
+            throw new GradleException('A backported class was not compiled')
+        }
+        new ZipFile(patched).withCloseable { zip ->
+            List<String> names = zip.entries().collect { it.name }
+            if (names.size() != (names as Set).size()) {
+                throw new GradleException('Duplicate entries in the patched Jetty JAR')
+            }
+            Set<String> replacements = names.findAll { path ->
+                backportSources.keySet().any { base -> path == base + '.class' || (path.startsWith(base + '$') && path.endsWith('.class')) }
+            } as Set
+            if (replacements != compiled) {
+                throw new GradleException('Backported nested classes are incomplete or contain an upstream remnant')
+            }
+            compiled.each { path ->
+                byte[] packaged = zip.getInputStream(zip.getEntry(path)).bytes
+                if (digest(packaged) != digest(new File(compiledDirectory(), path).bytes)) {
+                    throw new GradleException("Unpatched bytecode remains at ${path}")
+                }
+                if (((packaged[6] & 255) << 8 | (packaged[7] & 255)) != 52) {
+                    throw new GradleException('The backported classes must be compiled for Java 8')
+                }
+            }
+        }
+        logger.lifecycle("Verified patched ${project.name} ${project.version}: ${digest(patched.bytes)}")
+    }
+}
+
+check.dependsOn verification

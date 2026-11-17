@@ -1,0 +1,26 @@
+group = 'org.eclipse.jetty'
+version = '9.4.58.v20250814-acecore.1'
+description = 'Jetty Security 9.4.58 with documented upstream method omission fixes'
+
+ext.backportUpstreamVersion = '9.4.58.v20250814'
+ext.backportHashes = [
+    binary: '301548ebf008551a3a4312b04df0ea0468acc2780f863b83cc9cf0d668e62252',
+    sources: 'aa63bf59deba777ae7785b8cb357f752747a486a2292b692cf7f8c48bd8bba85'
+]
+ext.backportSources = [
+    'org/eclipse/jetty/security/ConstraintSecurityHandler': 'd451537b9c52583ce879677a54cd71cb3d4487541edd81219a74e843c55cd079'
+]
+ext.backportCommits = 'fc604037f0568d712bc45f6944ae1c484693690e'
+ext.backportProvenancePath = 'META-INF/acecore/jetty-security'
+ext.backportVerificationTask = 'verifyPatchedJettySecurity'
+ext.backportPreparationTask = 'prepareJettySecurity'
+apply from: '../jetty-backport.gradle'
+
+configurations.all { exclude group: 'org.eclipse.jetty', module: 'jetty-http' }
+dependencies {
+    upstreamBinary 'org.eclipse.jetty:jetty-security:9.4.58.v20250814'
+    upstreamSources 'org.eclipse.jetty:jetty-security:9.4.58.v20250814:sources'
+    implementation project(':jetty-http-patched')
+    implementation 'org.eclipse.jetty:jetty-server:9.4.58.v20250814'
+    implementation 'javax.servlet:javax.servlet-api:4.0.1'
+}
