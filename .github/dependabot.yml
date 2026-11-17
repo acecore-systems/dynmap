@@ -12,6 +12,7 @@ registries:
 
 # Minor/patch updates are grouped; major updates remain separate for review.
 # List modules explicitly because settings.gradle uses dynamic include expressions.
+# Split updates by platform and Minecraft era to stay within the hosted job time limit.
 updates:
   - package-ecosystem: gradle
     registries:
@@ -19,52 +20,10 @@ updates:
       - sponge
       - mikeprimm
     directories:
+      - "/"
       - "/DynmapCore"
       - "/DynmapCoreAPI"
-      - "/"
-      - "/bukkit-helper-113-2"
-      - "/bukkit-helper-114-1"
-      - "/bukkit-helper-115"
-      - "/bukkit-helper-116-2"
-      - "/bukkit-helper-116-3"
-      - "/bukkit-helper-116-4"
-      - "/bukkit-helper-116"
-      - "/bukkit-helper-117"
-      - "/bukkit-helper-118-2"
-      - "/bukkit-helper-118"
-      - "/bukkit-helper-119-3"
-      - "/bukkit-helper-119-4"
-      - "/bukkit-helper-119"
-      - "/bukkit-helper-120-2"
-      - "/bukkit-helper-120-4"
-      - "/bukkit-helper-120-5"
-      - "/bukkit-helper-120"
-      - "/bukkit-helper-121-10"
-      - "/bukkit-helper-121-11"
-      - "/bukkit-helper-121-3"
-      - "/bukkit-helper-121-4"
-      - "/bukkit-helper-121-5"
-      - "/bukkit-helper-121-6"
-      - "/bukkit-helper-121"
-      - "/bukkit-helper-26-2"
-      - "/bukkit-helper"
       - "/dynmap-api"
-      - "/fabric-1.14.4"
-      - "/fabric-1.15.2"
-      - "/fabric-1.16.4"
-      - "/fabric-1.17.1"
-      - "/forge-1.12.2"
-      - "/forge-1.14.4"
-      - "/forge-1.15.2"
-      - "/forge-1.16.5"
-      - "/forge-1.17.1"
-      - "/forge-1.18.2"
-      - "/forge-1.19.3"
-      - "/forge-1.20.6"
-      - "/forge-1.21.10"
-      - "/forge-1.21.11"
-      - "/forge-1.21.6"
-      - "/oldbuilds"
       - "/spigot"
     schedule:
       interval: weekly
@@ -85,7 +44,310 @@ updates:
       - dependency-name: "com.sun.xml.bind:jaxb-impl"
         versions: ["[4.0.0,)"]
     groups:
-      gradle-minor-patch:
+      gradle-shared-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: gradle
+    registries:
+      - forge
+      - sponge
+      - mikeprimm
+    directories:
+      - "/bukkit-helper"
+      - "/bukkit-helper-113-2"
+      - "/bukkit-helper-114-1"
+      - "/bukkit-helper-115"
+      - "/bukkit-helper-116"
+      - "/bukkit-helper-116-2"
+      - "/bukkit-helper-116-3"
+      - "/bukkit-helper-116-4"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    ignore:
+      # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
+      - dependency-name: "gradle-wrapper"
+        update-types: ["version-update:semver-major"]
+      # Loom 1.14 and higher require Gradle 9. The Forge and legacy Spigot build still uses Gradle 8.
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
+      # s3lite references Jakarta JAXB. Version 4 requires Java 11, while Dynmap supports Java 8.
+      - dependency-name: "jakarta.xml.bind:jakarta.xml.bind-api"
+        versions: ["[4.0.0,)"]
+      - dependency-name: "com.sun.xml.bind:jaxb-impl"
+        versions: ["[4.0.0,)"]
+    groups:
+      bukkit-legacy-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: gradle
+    registries:
+      - forge
+      - sponge
+      - mikeprimm
+    directories:
+      - "/bukkit-helper-117"
+      - "/bukkit-helper-118"
+      - "/bukkit-helper-118-2"
+      - "/bukkit-helper-119"
+      - "/bukkit-helper-119-3"
+      - "/bukkit-helper-119-4"
+      - "/bukkit-helper-120"
+      - "/bukkit-helper-120-2"
+      - "/bukkit-helper-120-4"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    ignore:
+      # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
+      - dependency-name: "gradle-wrapper"
+        update-types: ["version-update:semver-major"]
+      # Loom 1.14 and higher require Gradle 9. The Forge and legacy Spigot build still uses Gradle 8.
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
+      # s3lite references Jakarta JAXB. Version 4 requires Java 11, while Dynmap supports Java 8.
+      - dependency-name: "jakarta.xml.bind:jakarta.xml.bind-api"
+        versions: ["[4.0.0,)"]
+      - dependency-name: "com.sun.xml.bind:jaxb-impl"
+        versions: ["[4.0.0,)"]
+    groups:
+      bukkit-java-sixteen-seventeen-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: gradle
+    registries:
+      - forge
+      - sponge
+      - mikeprimm
+    directories:
+      - "/bukkit-helper-120-5"
+      - "/bukkit-helper-121"
+      - "/bukkit-helper-121-3"
+      - "/bukkit-helper-121-4"
+      - "/bukkit-helper-121-5"
+      - "/bukkit-helper-121-6"
+      - "/bukkit-helper-121-10"
+      - "/bukkit-helper-121-11"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    ignore:
+      # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
+      - dependency-name: "gradle-wrapper"
+        update-types: ["version-update:semver-major"]
+      # Loom 1.14 and higher require Gradle 9. The Forge and legacy Spigot build still uses Gradle 8.
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
+      # s3lite references Jakarta JAXB. Version 4 requires Java 11, while Dynmap supports Java 8.
+      - dependency-name: "jakarta.xml.bind:jakarta.xml.bind-api"
+        versions: ["[4.0.0,)"]
+      - dependency-name: "com.sun.xml.bind:jaxb-impl"
+        versions: ["[4.0.0,)"]
+    groups:
+      bukkit-java-twenty-one-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: gradle
+    registries:
+      - forge
+      - sponge
+      - mikeprimm
+    directories:
+      - "/bukkit-helper-26-2"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    ignore:
+      # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
+      - dependency-name: "gradle-wrapper"
+        update-types: ["version-update:semver-major"]
+      # Loom 1.14 and higher require Gradle 9. The Forge and legacy Spigot build still uses Gradle 8.
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
+      # s3lite references Jakarta JAXB. Version 4 requires Java 11, while Dynmap supports Java 8.
+      - dependency-name: "jakarta.xml.bind:jakarta.xml.bind-api"
+        versions: ["[4.0.0,)"]
+      - dependency-name: "com.sun.xml.bind:jaxb-impl"
+        versions: ["[4.0.0,)"]
+    groups:
+      bukkit-minecraft-twenty-six-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: gradle
+    registries:
+      - forge
+      - sponge
+      - mikeprimm
+    directories:
+      - "/forge-1.12.2"
+      - "/oldbuilds"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    ignore:
+      # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
+      - dependency-name: "gradle-wrapper"
+        update-types: ["version-update:semver-major"]
+      # Loom 1.14 and higher require Gradle 9. The Forge and legacy Spigot build still uses Gradle 8.
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
+      # s3lite references Jakarta JAXB. Version 4 requires Java 11, while Dynmap supports Java 8.
+      - dependency-name: "jakarta.xml.bind:jakarta.xml.bind-api"
+        versions: ["[4.0.0,)"]
+      - dependency-name: "com.sun.xml.bind:jaxb-impl"
+        versions: ["[4.0.0,)"]
+    groups:
+      forge-classic-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: gradle
+    registries:
+      - forge
+      - sponge
+      - mikeprimm
+    directories:
+      - "/forge-1.14.4"
+      - "/forge-1.15.2"
+      - "/forge-1.16.5"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    ignore:
+      # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
+      - dependency-name: "gradle-wrapper"
+        update-types: ["version-update:semver-major"]
+      # Loom 1.14 and higher require Gradle 9. The Forge and legacy Spigot build still uses Gradle 8.
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
+      # s3lite references Jakarta JAXB. Version 4 requires Java 11, while Dynmap supports Java 8.
+      - dependency-name: "jakarta.xml.bind:jakarta.xml.bind-api"
+        versions: ["[4.0.0,)"]
+      - dependency-name: "com.sun.xml.bind:jaxb-impl"
+        versions: ["[4.0.0,)"]
+    groups:
+      forge-java-eight-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: gradle
+    registries:
+      - forge
+      - sponge
+      - mikeprimm
+    directories:
+      - "/forge-1.17.1"
+      - "/forge-1.18.2"
+      - "/forge-1.19.3"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    ignore:
+      # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
+      - dependency-name: "gradle-wrapper"
+        update-types: ["version-update:semver-major"]
+      # Loom 1.14 and higher require Gradle 9. The Forge and legacy Spigot build still uses Gradle 8.
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
+      # s3lite references Jakarta JAXB. Version 4 requires Java 11, while Dynmap supports Java 8.
+      - dependency-name: "jakarta.xml.bind:jakarta.xml.bind-api"
+        versions: ["[4.0.0,)"]
+      - dependency-name: "com.sun.xml.bind:jaxb-impl"
+        versions: ["[4.0.0,)"]
+    groups:
+      forge-java-sixteen-seventeen-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: gradle
+    registries:
+      - forge
+      - sponge
+      - mikeprimm
+    directories:
+      - "/forge-1.20.6"
+      - "/forge-1.21.6"
+      - "/forge-1.21.10"
+      - "/forge-1.21.11"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    ignore:
+      # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
+      - dependency-name: "gradle-wrapper"
+        update-types: ["version-update:semver-major"]
+      # Loom 1.14 and higher require Gradle 9. The Forge and legacy Spigot build still uses Gradle 8.
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
+      # s3lite references Jakarta JAXB. Version 4 requires Java 11, while Dynmap supports Java 8.
+      - dependency-name: "jakarta.xml.bind:jakarta.xml.bind-api"
+        versions: ["[4.0.0,)"]
+      - dependency-name: "com.sun.xml.bind:jaxb-impl"
+        versions: ["[4.0.0,)"]
+    groups:
+      forge-java-twenty-one-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: gradle
+    registries:
+      - forge
+      - sponge
+      - mikeprimm
+    directories:
+      - "/fabric-1.14.4"
+      - "/fabric-1.15.2"
+      - "/fabric-1.16.4"
+      - "/fabric-1.17.1"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    ignore:
+      # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
+      - dependency-name: "gradle-wrapper"
+        update-types: ["version-update:semver-major"]
+      # Loom 1.14 and higher require Gradle 9. The Forge and legacy Spigot build still uses Gradle 8.
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
+      # s3lite references Jakarta JAXB. Version 4 requires Java 11, while Dynmap supports Java 8.
+      - dependency-name: "jakarta.xml.bind:jakarta.xml.bind-api"
+        versions: ["[4.0.0,)"]
+      - dependency-name: "com.sun.xml.bind:jaxb-impl"
+        versions: ["[4.0.0,)"]
+    groups:
+      fabric-early-minor-patch:
         patterns: ["*"]
         update-types: ["minor", "patch"]
 
