@@ -16,8 +16,8 @@ java {
 dependencies {
     implementation project(':DynmapCoreAPI')
     implementation 'javax.servlet:javax.servlet-api:4.0.1'
-    implementation'org.eclipse.jetty:jetty-server:9.4.26.v20200117'
-    implementation 'org.eclipse.jetty:jetty-servlet:9.4.26.v20200117'
+    implementation 'org.eclipse.jetty:jetty-server:9.4.58.v20250814'
+    implementation 'org.eclipse.jetty:jetty-servlet:9.4.58.v20250814'
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     implementation 'org.yaml:snakeyaml:2.7' // Keep in sync with forge-1.12.2, which compiles these sources directly.
     implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20261110.1'
