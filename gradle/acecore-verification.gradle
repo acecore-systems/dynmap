@@ -42,6 +42,9 @@ if (findProject(':spigot') != null) {
                     'org/dynmap/jetty/server/Server.class',
                     'org/dynmap/jetty/servlet/ServletContextHandler.class',
                     'org/dynmap/javax/servlet/Servlet.class',
+                    'org/dynmap/javax/servlet/http/PushBuilder.class',
+                    'org/dynmap/org/owasp/html/PolicyFactory.class',
+                    'org/dynmap/org/owasp/shim/Java8Shim.class',
                     'org/dynmap/bstats/bukkit/Metrics.class',
                     'org/dynmap/s3lite/api/client/S3Client.class',
                     'extracted/web/js/map.js'
