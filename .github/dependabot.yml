@@ -64,6 +64,10 @@ updates:
       time: "05:00"
       timezone: Asia/Tokyo
     open-pull-requests-limit: 5
+    ignore:
+      # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
+      - dependency-name: "gradle-wrapper"
+        update-types: ["version-update:semver-major"]
     groups:
       gradle-minor-patch:
         patterns: ["*"]
