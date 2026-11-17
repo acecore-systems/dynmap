@@ -2,6 +2,7 @@ package org.dynmap.utils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.awt.image.BufferedImage;
@@ -19,8 +20,6 @@ import org.dynmap.Log;
 import org.dynmap.MapType.ImageEncoding;
 import org.dynmap.MapType.ImageFormat;
 import org.dynmap.storage.MapStorageTile;
-
-import com.google.common.io.Files;
 
 import org.dynmap.DynmapCore;
 
@@ -77,7 +76,7 @@ public class ImageIOManager {
         	throw new IOException("Error waiting for encoder");
         }
         // Read output file into output stream
-        Files.copy(tmpfile2, out);
+        Files.copy(tmpfile2.toPath(), out);
         out.flush();
         // Clean up temp files
         tmpfile.delete();
@@ -87,7 +86,7 @@ public class ImageIOManager {
     private static BufferedImage doWEBPDecode(BufferInputStream buf) throws IOException {
         // Write to a tmp file
         File tmpfile = File.createTempFile("webpToPng", "webp");
-        Files.write(buf.buffer(), tmpfile);
+        Files.write(tmpfile.toPath(), buf.buffer());
         // Run encoder to new new temp file
         File tmpfile2 = File.createTempFile("webpToPng", "png");
         String args[] = { core.getDWEBPPath(), tmpfile.getAbsolutePath(), "-o", tmpfile2.getAbsolutePath() };
