@@ -23,24 +23,22 @@ shadowJar {
         Set<String> expected
         new ZipFile(input).withCloseable { zip ->
             expected = zip.entries().findAll {
-                it.name == 'org/eclipse/jetty/http/HttpParser.class' ||
-                    it.name.startsWith('org/eclipse/jetty/http/HttpParser$')
+                it.name ==~ /org\/eclipse\/jetty\/http\/(HttpParser|HttpURI)(\$.*)?\.class/
             }.collect { it.name.replace('org/eclipse/jetty/', 'org/dynmap/jetty/') } as Set
         }
         new ZipFile(output).withCloseable { zip ->
             List<String> names = zip.entries().collect { it.name }
             List<String> actual = names.findAll {
-                it == 'org/dynmap/jetty/http/HttpParser.class' ||
-                    it.startsWith('org/dynmap/jetty/http/HttpParser$')
+                it ==~ /org\/dynmap\/jetty\/http\/(HttpParser|HttpURI)(\$.*)?\.class/
             }
             if (actual.size() != expected.size() || (actual as Set) != expected ||
-                names.any { it.startsWith('org/eclipse/jetty/http/HttpParser') }) {
-                throw new GradleException('The final Shadow JAR has missing, duplicate, or unrelocated parser classes')
+                names.any { it ==~ /org\/eclipse\/jetty\/http\/(HttpParser|HttpURI)(\$.*)?\.class/ }) {
+                throw new GradleException('The final Shadow JAR has missing, duplicate, or unrelocated parser/URI classes')
             }
             expected.each { path ->
                 byte[] bytes = zip.getInputStream(zip.getEntry(path)).bytes
                 if (((bytes[6] & 255) << 8 | (bytes[7] & 255)) != 52) {
-                    throw new GradleException('The final parser classes must remain Java 8 compatible')
+                    throw new GradleException('The final parser/URI classes must remain Java 8 compatible')
                 }
             }
             byte[] parser = zip.getInputStream(zip.getEntry('org/dynmap/jetty/http/HttpParser.class')).bytes
@@ -48,10 +46,15 @@ shadowJar {
             if (!constants.contains('parseChunkSize') || !constants.contains('CHUNK_END')) {
                 throw new GradleException('The final parser is missing the backported chunk state machine')
             }
+            byte[] uri = zip.getInputStream(zip.getEntry('org/dynmap/jetty/http/HttpURI.class')).bytes
+            String uriConstants = new String(uri, 'ISO-8859-1')
+            if (!uriConstants.contains('validateScheme') || !uriConstants.contains('validateInetAddress')) {
+                throw new GradleException('The final URI class is missing the backported validation helpers')
+            }
             if (zip.getEntry('META-INF/acecore/BACKPORT.md') == null) {
                 throw new GradleException('Jetty backport provenance is missing from the final Shadow JAR')
             }
         }
-        logger.lifecycle("Verified ${output.name}: all ${expected.size()} patched parser classes are relocated")
+        logger.lifecycle("Verified ${output.name}: all ${expected.size()} patched parser/URI classes are relocated")
     }
 }
