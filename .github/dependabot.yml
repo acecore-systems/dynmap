@@ -68,6 +68,11 @@ updates:
       # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
       - dependency-name: "gradle-wrapper"
         update-types: ["version-update:semver-major"]
+      # s3lite references Jakarta JAXB. Version 4 requires Java 11, while Dynmap supports Java 8.
+      - dependency-name: "jakarta.xml.bind:jakarta.xml.bind-api"
+        versions: ["[4.0.0,)"]
+      - dependency-name: "com.sun.xml.bind:jaxb-impl"
+        versions: ["[4.0.0,)"]
       # 0.7.0 targets Minecraft 26.1, not the older Fabric modules in this repository.
       - dependency-name: "me.lucko:fabric-permissions-api"
         versions: ["0.7.0"]

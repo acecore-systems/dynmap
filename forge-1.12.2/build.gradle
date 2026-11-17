@@ -24,12 +24,12 @@ eclipse {
 }
 
 dependencies {
-    implementation 'javax.servlet:javax.servlet-api:3.1'
+    implementation 'javax.servlet:javax.servlet-api:4.0.1'
     implementation'org.eclipse.jetty:jetty-server:9.4.26.v20200117'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.26.v20200117'
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     implementation 'org.yaml:snakeyaml:2.7' // The shared DynmapCore sources use the same SnakeYAML API.
-    implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20180219.1'
+    implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20261110.1'
     implementation 'org.postgresql:postgresql:42.7.14'
     implementation 'io.github.linktosriram.s3lite:core:0.0.2-SNAPSHOT'
     implementation 'io.github.linktosriram.s3lite:api:0.0.2-SNAPSHOT'
@@ -37,7 +37,7 @@ dependencies {
     implementation 'io.github.linktosriram.s3lite:http-client-spi:0.0.2-SNAPSHOT'
     implementation 'io.github.linktosriram.s3lite:util:0.0.2-SNAPSHOT'
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
-    implementation 'com.sun.xml.bind:jaxb-impl:3.0.0'
+    implementation 'com.sun.xml.bind:jaxb-impl:3.0.2'
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     implementation 'org.spongepowered:spongeapi:7.0.0'
 }
@@ -89,6 +89,8 @@ shadowJar {
     exclude('META-INF/versions/9/org/yaml/snakeyaml/**', 'META-INF/versions/9/module-info.class')
     // PostgreSQL's Java 11 overlay cannot be read by Shadow 2; Java 8 root classes remain.
     exclude('META-INF/versions/11/org/postgresql/**')
+    // The sanitizer provides a Java 8 fallback; Shadow 2 cannot read the Java 10 overlay.
+    exclude('META-INF/versions/10/org/owasp/shim/**')
     dependencies {
         include(dependency('com.googlecode.json-simple:json-simple:'))
         include(dependency('org.yaml:snakeyaml:'))
@@ -111,6 +113,7 @@ shadowJar {
 	relocate('org.yaml.snakeyaml', 'org.dynmap.snakeyaml')
 	relocate('org.eclipse.jetty', 'org.dynmap.jetty')
 	relocate('org.owasp.html', 'org.dynmap.org.owasp.html')
+	relocate('org.owasp.shim', 'org.dynmap.org.owasp.shim')
 	relocate('javax.servlet', 'org.dynmap.javax.servlet' )
 	relocate('org.postgresql', 'org.dynmap.org.postgresql')
 	relocate('io.github.linktosriram.s3lite', 'org.dynmap.s3lite')    
