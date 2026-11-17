@@ -22,6 +22,7 @@ updates:
     directories:
       - "/"
       - "/DynmapCore"
+      - "/dependency-patches/jetty-http"
       - "/DynmapCoreAPI"
       - "/dynmap-api"
       - "/spigot"
