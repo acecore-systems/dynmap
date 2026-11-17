@@ -76,6 +76,9 @@ updates:
       # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
       - dependency-name: "gradle-wrapper"
         update-types: ["version-update:semver-major"]
+      # Loom 1.14 and higher require Gradle 9. The Forge and legacy Spigot build still uses Gradle 8.
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
     groups:
       gradle-minor-patch:
         patterns: ["*"]
@@ -98,6 +101,8 @@ updates:
     ignore:
       - dependency-name: "me.lucko:fabric-permissions-api"
         versions: ["[0.3.2,)"]
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
     groups:
       fabric-legacy-minor-patch:
         patterns: ["*"]
@@ -116,6 +121,8 @@ updates:
     ignore:
       - dependency-name: "me.lucko:fabric-permissions-api"
         versions: ["[0.5.0,)"]
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
     groups:
       fabric-1.21.6-minor-patch:
         patterns: ["*"]
@@ -134,6 +141,8 @@ updates:
     ignore:
       - dependency-name: "me.lucko:fabric-permissions-api"
         versions: ["[0.6.0,)"]
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
     groups:
       fabric-1.21.9-minor-patch:
         patterns: ["*"]
@@ -152,6 +161,8 @@ updates:
     ignore:
       - dependency-name: "me.lucko:fabric-permissions-api"
         versions: ["[0.7.0,)"]
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
     groups:
       fabric-1.21.11-minor-patch:
         patterns: ["*"]
