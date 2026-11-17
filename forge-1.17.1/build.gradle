@@ -40,7 +40,7 @@ dependencies {
     implementation project(path: ":DynmapCore", configuration: "shadow")
     implementation project(path: ':DynmapCoreAPI')
     
-    minecraft 'net.minecraftforge:forge:1.17.1-37.0.12'
+    minecraft 'net.minecraftforge:forge:1.17.1-37.1.1'
 }
 
 processResources
