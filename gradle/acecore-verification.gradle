@@ -41,6 +41,7 @@ if (findProject(':spigot') != null) {
                     'org/dynmap/snakeyaml/inspector/UnTrustedTagInspector.class',
                     'org/dynmap/jetty/server/Server.class',
                     'org/dynmap/jetty/http/HttpParser$ChunkSizeState.class',
+                    'org/dynmap/jetty/http/HttpURI.class',
                     'META-INF/acecore/BACKPORT.md',
                     'org/dynmap/jetty/servlet/ServletContextHandler.class',
                     'org/dynmap/javax/servlet/Servlet.class',
@@ -56,15 +57,13 @@ if (findProject(':spigot') != null) {
                 File coreJar = project(':DynmapCore').tasks.named('shadowJar').get().archiveFile.get().asFile
                 new ZipFile(coreJar).withCloseable { core ->
                     def parserNames = core.entries().findAll {
-                        it.name == 'org/dynmap/jetty/http/HttpParser.class' ||
-                            it.name.startsWith('org/dynmap/jetty/http/HttpParser$')
+                        it.name ==~ /org\/dynmap\/jetty\/http\/(HttpParser|HttpURI)(\$.*)?\.class/
                     }.collect { it.name } as Set
                     def packaged = zip.entries().findAll {
-                        it.name == 'org/dynmap/jetty/http/HttpParser.class' ||
-                            it.name.startsWith('org/dynmap/jetty/http/HttpParser$')
+                        it.name ==~ /org\/dynmap\/jetty\/http\/(HttpParser|HttpURI)(\$.*)?\.class/
                     }.collect { it.name }
                     if (packaged.size() != parserNames.size() || (packaged as Set) != parserNames ||
-                        zip.entries().any { it.name.startsWith('org/eclipse/jetty/http/HttpParser') }) {
+                        zip.entries().any { it.name ==~ /org\/eclipse\/jetty\/http\/(HttpParser|HttpURI)(\$.*)?\.class/ }) {
                         throw new GradleException('Spigot must preserve the complete relocated Core parser')
                     }
                     parserNames.each { name ->

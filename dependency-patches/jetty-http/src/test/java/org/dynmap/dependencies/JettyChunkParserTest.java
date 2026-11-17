@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import org.eclipse.jetty.http.BadMessageException;
 import org.eclipse.jetty.http.HttpField;
+import org.eclipse.jetty.http.HttpCompliance;
 import org.eclipse.jetty.http.HttpParser;
 import org.eclipse.jetty.http.HttpVersion;
 import org.junit.Test;
@@ -75,6 +76,25 @@ public class JettyChunkParserTest {
     }
 
     @Test
+    public void rejectsEveryAdvisoryChunkTerminatorInAllComplianceModes() {
+        String[] bodies = {
+            "1;a=token\nx\r\n0\r\n\r\n",
+            "1\r\nx\n0\r\n\r\n",
+            "1\r\nx\r\n0\r\nX-Trailer: yes\n\r\n"
+        };
+        for (HttpCompliance compliance : HttpCompliance.values()) {
+            for (String body : bodies) {
+                String message = REQUEST + body;
+                for (int split = 0; split <= message.length(); split++) {
+                    RecordingHandler handler = parse(message, split, compliance);
+                    assertTrue(compliance + " split " + split, handler.failure != null || handler.earlyEof);
+                    assertFalse(compliance + " split " + split, handler.complete);
+                }
+            }
+        }
+    }
+
+    @Test
     public void parserResetPreservesOrdinaryRequestHandling() {
         RecordingHandler handler = new RecordingHandler();
         HttpParser parser = new HttpParser((HttpParser.RequestHandler)handler);
@@ -106,8 +126,13 @@ public class JettyChunkParserTest {
     }
 
     private static RecordingHandler parse(String message, int split) {
+        return parse(message, split, null);
+    }
+
+    private static RecordingHandler parse(String message, int split, HttpCompliance compliance) {
         RecordingHandler handler = new RecordingHandler();
-        HttpParser parser = new HttpParser((HttpParser.RequestHandler)handler);
+        HttpParser parser = compliance == null ? new HttpParser((HttpParser.RequestHandler)handler)
+                : new HttpParser((HttpParser.RequestHandler)handler, compliance);
         feed(parser, buffer(message.substring(0, split)));
         if (handler.failure == null) {
             feed(parser, buffer(message.substring(split)));

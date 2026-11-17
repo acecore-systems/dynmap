@@ -1,0 +1,17 @@
+--- official9.4/HttpURITest.java
++++ compatibility/HttpURITest.java
+@@ -900,6 +900,14 @@
+     @MethodSource("badAuthorities")
+     public void testBadAuthority(String uri)
+     {
++        // Official cccfd20b removes this rejection expectation when fixing empty paths.
++        if (uri.equals("https://user#@host.com/"))
++        {
++            HttpURI parsed = new HttpURI(uri);
++            assertEquals("user", parsed.getHost());
++            assertEquals("@host.com/", parsed.getFragment());
++            return;
++        }
+         assertThrows(IllegalArgumentException.class, () -> new HttpURI(uri));
+     }
+ }
