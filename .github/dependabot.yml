@@ -79,6 +79,11 @@ updates:
       # Loom 1.14 and higher require Gradle 9. The Forge and legacy Spigot build still uses Gradle 8.
       - dependency-name: "fabric-loom"
         versions: ["[1.14,)"]
+      # s3lite references Jakarta JAXB. Version 4 requires Java 11, while Dynmap supports Java 8.
+      - dependency-name: "jakarta.xml.bind:jakarta.xml.bind-api"
+        versions: ["[4.0.0,)"]
+      - dependency-name: "com.sun.xml.bind:jaxb-impl"
+        versions: ["[4.0.0,)"]
     groups:
       gradle-minor-patch:
         patterns: ["*"]
