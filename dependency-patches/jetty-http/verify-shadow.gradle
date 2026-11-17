@@ -1,13 +1,13 @@
 import java.util.zip.ZipFile
 
 // Both modern Core and Java 8 Forge must shade the verified replacement packages.
-def patchedModules = [':jetty-http-patched', ':jetty-security-patched']
+def patchedModules = [':jetty-http-patched', ':jetty-security-patched', ':jetty-server-patched']
 shadowJar {
-    dependsOn ':jetty-http-patched:verifyPatchedJettyHttp', ':jetty-security-patched:verifyPatchedJettySecurity'
+    dependsOn ':jetty-http-patched:verifyPatchedJettyHttp', ':jetty-security-patched:verifyPatchedJettySecurity', ':jetty-server-patched:verifyPatchedJettyServer'
     doFirst {
         def original = project.configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts.find {
             it.moduleVersion.id.group == 'org.eclipse.jetty' &&
-                it.moduleVersion.id.name in ['jetty-http', 'jetty-security']
+                it.moduleVersion.id.name in ['jetty-http', 'jetty-security', 'jetty-server']
         }
         if (original != null) {
             throw new GradleException('An unpatched Jetty artifact remains in the runtime classpath')
@@ -40,10 +40,10 @@ shadowJar {
         new ZipFile(output).withCloseable { zip ->
             List<String> names = zip.entries().collect { it.name }
             List<String> actual = names.findAll {
-                it ==~ /org\/dynmap\/jetty\/(http\/(HttpParser|HttpURI)|security\/ConstraintSecurityHandler)(\$.*)?\.class/
+                it ==~ /org\/dynmap\/jetty\/(http\/(HttpParser|HttpURI)|security\/ConstraintSecurityHandler|server\/HttpChannelOverHttp)(\$.*)?\.class/
             }
             if (actual.size() != expected.size() || (actual as Set) != expected ||
-                names.any { it ==~ /org\/eclipse\/jetty\/(http\/(HttpParser|HttpURI)|security\/ConstraintSecurityHandler)(\$.*)?\.class/ }) {
+                names.any { it ==~ /org\/eclipse\/jetty\/(http\/(HttpParser|HttpURI)|security\/ConstraintSecurityHandler|server\/HttpChannelOverHttp)(\$.*)?\.class/ }) {
                 throw new GradleException('The final Shadow JAR has missing, duplicate, or unrelocated backported classes')
             }
             expected.each { path ->
@@ -59,6 +59,10 @@ shadowJar {
             String uri = new String(zip.getInputStream(zip.getEntry('org/dynmap/jetty/http/HttpURI.class')).bytes, 'ISO-8859-1')
             if (!uri.contains('validateScheme') || !uri.contains('validateInetAddress')) {
                 throw new GradleException('The final URI class is missing the backported validation helpers')
+            }
+            String channel = new String(zip.getInputStream(zip.getEntry('org/dynmap/jetty/server/HttpChannelOverHttp.class')).bytes, 'ISO-8859-1')
+            if (!channel.contains('authorityMatches') || !channel.contains('getDefaultPortForScheme')) {
+                throw new GradleException('The final HTTP1 channel is missing the backported authority validation')
             }
             patchedModules.each { path ->
                 def p = project(path)

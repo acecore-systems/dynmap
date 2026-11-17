@@ -28,7 +28,7 @@ dependencies {
     implementation project(':jetty-http-patched')
     implementation project(':jetty-security-patched')
     implementation 'javax.servlet:javax.servlet-api:4.0.1'
-    implementation 'org.eclipse.jetty:jetty-server:9.4.58.v20250814'
+    implementation project(':jetty-server-patched')
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.58.v20250814'
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     implementation 'org.yaml:snakeyaml:2.7' // The shared DynmapCore sources use the same SnakeYAML API.
@@ -152,6 +152,7 @@ build.dependsOn(shadowJar)
 configurations.all {
     exclude group: 'org.eclipse.jetty', module: 'jetty-http'
     exclude group: 'org.eclipse.jetty', module: 'jetty-security'
+    exclude group: 'org.eclipse.jetty', module: 'jetty-server'
 }
 
 apply from: project(':jetty-http-patched').file('verify-shadow.gradle')

@@ -80,3 +80,6 @@ modules.findAll { name ->
 
 include ':jetty-security-patched'
 project(':jetty-security-patched').projectDir = file('dependency-patches/jetty-security')
+
+include ':jetty-server-patched'
+project(':jetty-server-patched').projectDir = file('dependency-patches/jetty-server')

@@ -1,5 +1,7 @@
+apply plugin: 'java-library'
+
 group = 'org.eclipse.jetty'
-version = '9.4.58.v20250814-acecore.2'
+version = '9.4.58.v20250814-acecore.3'
 description = 'Jetty HTTP 9.4.58 with documented upstream chunk and URI backports'
 
 ext.backportUpstreamVersion = '9.4.58.v20250814'
@@ -20,6 +22,6 @@ apply from: '../jetty-backport.gradle'
 dependencies {
     upstreamBinary 'org.eclipse.jetty:jetty-http:9.4.58.v20250814'
     upstreamSources 'org.eclipse.jetty:jetty-http:9.4.58.v20250814:sources'
-    implementation 'org.eclipse.jetty:jetty-io:9.4.58.v20250814'
-    implementation 'org.eclipse.jetty:jetty-util:9.4.58.v20250814'
+    api 'org.eclipse.jetty:jetty-io:9.4.58.v20250814'
+    api 'org.eclipse.jetty:jetty-util:9.4.58.v20250814'
 }

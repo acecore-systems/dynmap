@@ -32,7 +32,7 @@ public class JettyUriParserTest {
                 boolean hasPort = suffix.startsWith(":");
                 assertEquals(host + (hasPort ? ":8123" : ""), uri.getAuthority());
                 assertEquals(hasPort ? 8123 : -1, uri.getPort());
-                String path = suffix.contains("/path") ? "/path" : suffix.equals("/") ? "/" : "";
+                String path = suffix.contains("/path") ? "/path" : suffix.equals("/") ? "/" : null;
                 assertEquals(path, uri.getPath());
                 assertEquals(suffix.contains("?") ? "q=1" : null, uri.getQuery());
                 assertEquals(suffix.contains("#") ? "part" : null, uri.getFragment());
@@ -65,14 +65,40 @@ public class JettyUriParserTest {
         assertNull(userFragment.getUser());
         HttpURI fragment = new HttpURI("http://good.com#@evil.com");
         assertEquals("good.com", fragment.getAuthority());
-        assertEquals("", fragment.getPath());
+        assertNull(fragment.getPath());
         assertNull(fragment.getQuery());
         assertEquals("@evil.com", fragment.getFragment());
         HttpURI query = new HttpURI("http://good.com?@evil.com");
         assertEquals("good.com", query.getAuthority());
-        assertEquals("", query.getPath());
+        assertNull(query.getPath());
         assertEquals("@evil.com", query.getQuery());
         assertNull(query.getFragment());
+    }
+
+    @Test
+    public void emptyAbsolutePathsRetainJetty9NullContract() {
+        for (String value : new String[] {"http://localhost", "http://localhost:80", "http://[::1]", "http://[::1]:80"}) {
+            HttpURI uri = new HttpURI(value);
+            assertNull(value, uri.getPath());
+            assertNull(value, uri.getPathQuery());
+        }
+        HttpURI queryOnly = new HttpURI("http://localhost:80?q=1");
+        assertNull(queryOnly.getPath());
+        assertEquals("?q=1", queryOnly.getPathQuery());
+        assertEquals("q=1", queryOnly.getQuery());
+    }
+
+    @Test
+    public void relativeQueryAndFragmentRetainOriginalEmptyPath() {
+        HttpURI query = new HttpURI("?q=1");
+        assertEquals("", query.getPath());
+        assertEquals("", query.getDecodedPath());
+        assertEquals("?q=1", query.getPathQuery());
+        HttpURI fragment = new HttpURI("#part");
+        assertEquals("", fragment.getPath());
+        assertEquals("", fragment.getDecodedPath());
+        assertEquals("", fragment.getPathQuery());
+        assertEquals("part", fragment.getFragment());
     }
 
     @Test

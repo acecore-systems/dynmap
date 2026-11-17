@@ -1,0 +1,27 @@
+apply plugin: 'java-library'
+
+group = 'org.eclipse.jetty'
+version = '9.4.58.v20250814-acecore.1'
+description = 'Jetty Server 9.4.58 with documented upstream HTTP1 authority validation'
+
+ext.backportUpstreamVersion = '9.4.58.v20250814'
+ext.backportHashes = [
+    binary: '608dbd3e1c4184374f02c70704e5d1c9daaded45e6a31d07824f40dac6083ba9',
+    sources: '45815da72c11ba6394f2efc7a6923e81a9c31444d51f7a5a56b25dd421830d42'
+]
+ext.backportSources = [
+    'org/eclipse/jetty/server/HttpChannelOverHttp': 'd578a94470d1c7004a4169c2cbac2f8bc6ee5887563a949ead8b2f4c7e732421'
+]
+ext.backportCommits = 'cbca3076f7c914a232e7a8b22fa95fbf7e67a6cc'
+ext.backportProvenancePath = 'META-INF/acecore/jetty-server'
+ext.backportVerificationTask = 'verifyPatchedJettyServer'
+ext.backportPreparationTask = 'prepareJettyServer'
+apply from: '../jetty-backport.gradle'
+
+dependencies {
+    upstreamBinary 'org.eclipse.jetty:jetty-server:9.4.58.v20250814'
+    upstreamSources 'org.eclipse.jetty:jetty-server:9.4.58.v20250814:sources'
+    api project(':jetty-http-patched')
+    api 'org.eclipse.jetty:jetty-io:9.4.58.v20250814'
+    api 'javax.servlet:javax.servlet-api:4.0.1'
+}

@@ -24,6 +24,7 @@ updates:
       - "/DynmapCore"
       - "/dependency-patches/jetty-http"
       - "/dependency-patches/jetty-security"
+      - "/dependency-patches/jetty-server"
       - "/DynmapCoreAPI"
       - "/dynmap-api"
       - "/spigot"

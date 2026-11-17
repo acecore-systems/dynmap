@@ -1,0 +1,10 @@
+--- a/org/eclipse/jetty/security/ConstraintTest.java
++++ b/org/eclipse/jetty/security/ConstraintTest.java
+@@ -1139,7 +1139,6 @@
+ 
+         response = _connector.getResponse("POST /ctx/auth/info HTTP/1.1\r\n" +
+             "Host: test\r\n" +
+-            "Host: localhost\r\n" +
+             "Content-Type: text/plain\r\n" +
+             "Content-Length: 10\r\n" +
+             "\r\n" +
