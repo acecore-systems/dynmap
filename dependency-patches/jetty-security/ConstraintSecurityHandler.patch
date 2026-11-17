@@ -1,0 +1,32 @@
+--- a/org/eclipse/jetty/security/ConstraintSecurityHandler.java
++++ b/org/eclipse/jetty/security/ConstraintSecurityHandler.java
+@@ -504,9 +504,18 @@
+             sb.append(omissions[i]);
+         }
+         sb.append(OMISSION_SUFFIX);
+-        RoleInfo ri = new RoleInfo();
+-        mappings.put(sb.toString(), ri);
++        String key = sb.toString();
++        RoleInfo ri = mappings.get(key);
++        if (ri == null)
++        {
++            ri = new RoleInfo();
++            ri.setForbidden(mapping.getConstraint().isForbidden());
++        }
++        boolean forbidden = ri.isForbidden();
+         configureRoleInfo(ri, mapping);
++        if (forbidden)
++            ri.setForbidden(true);
++        mappings.put(key, ri);
+     }
+ 
+     /**
+@@ -600,7 +609,7 @@
+                 //(ie matches because target method is not omitted, hence considered covered by the constraint)
+                 for (Entry<String, RoleInfo> entry : mappings.entrySet())
+                 {
+-                    if (entry.getKey() != null && entry.getKey().endsWith(OMISSION_SUFFIX) && !entry.getKey().contains(httpMethod))
++                    if (entry.getKey() != null && entry.getKey().endsWith(OMISSION_SUFFIX) && !getOmittedMethods(entry.getKey()).contains(httpMethod))
+                         applicableConstraints.add(entry.getValue());
+                 }
+ 

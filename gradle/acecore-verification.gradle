@@ -43,6 +43,8 @@ if (findProject(':spigot') != null) {
                     'org/dynmap/jetty/http/HttpParser$ChunkSizeState.class',
                     'org/dynmap/jetty/http/HttpURI.class',
                     'META-INF/acecore/BACKPORT.md',
+                    'META-INF/acecore/jetty-security/BACKPORT.md',
+                    'org/dynmap/jetty/security/ConstraintSecurityHandler.class',
                     'org/dynmap/jetty/servlet/ServletContextHandler.class',
                     'org/dynmap/javax/servlet/Servlet.class',
                     'org/dynmap/javax/servlet/http/PushBuilder.class',
@@ -57,13 +59,13 @@ if (findProject(':spigot') != null) {
                 File coreJar = project(':DynmapCore').tasks.named('shadowJar').get().archiveFile.get().asFile
                 new ZipFile(coreJar).withCloseable { core ->
                     def parserNames = core.entries().findAll {
-                        it.name ==~ /org\/dynmap\/jetty\/http\/(HttpParser|HttpURI)(\$.*)?\.class/
+                        it.name ==~ /org\/dynmap\/jetty\/(http\/(HttpParser|HttpURI)|security\/ConstraintSecurityHandler)(\$.*)?\.class/
                     }.collect { it.name } as Set
                     def packaged = zip.entries().findAll {
-                        it.name ==~ /org\/dynmap\/jetty\/http\/(HttpParser|HttpURI)(\$.*)?\.class/
+                        it.name ==~ /org\/dynmap\/jetty\/(http\/(HttpParser|HttpURI)|security\/ConstraintSecurityHandler)(\$.*)?\.class/
                     }.collect { it.name }
                     if (packaged.size() != parserNames.size() || (packaged as Set) != parserNames ||
-                        zip.entries().any { it.name ==~ /org\/eclipse\/jetty\/http\/(HttpParser|HttpURI)(\$.*)?\.class/ }) {
+                        zip.entries().any { it.name ==~ /org\/eclipse\/jetty\/(http\/(HttpParser|HttpURI)|security\/ConstraintSecurityHandler)(\$.*)?\.class/ }) {
                         throw new GradleException('Spigot must preserve the complete relocated Core parser')
                     }
                     parserNames.each { name ->
