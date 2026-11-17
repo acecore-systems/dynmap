@@ -44,7 +44,7 @@ dependencies {
     implementation project(path: ':DynmapCoreAPI')
     annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.7'
     
-    minecraft 'net.minecraftforge:forge:1.21.11-61.0.5'
+    minecraft 'net.minecraftforge:forge:26.3-66.1.8'
 }
 
 processResources
