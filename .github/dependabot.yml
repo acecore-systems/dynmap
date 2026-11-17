@@ -597,11 +597,28 @@ updates:
         versions: ["[4.0.0,)"]
       # Only Forge releases targeting Minecraft 1.21.11 use this module's mappings and APIs.
       - dependency-name: "net.minecraftforge:forge"
-        # 61.2.5 fails in ForgeGradle with duplicate mcp/client/Start.class.
-        versions: ["(,1.21.11)", "[1.21.12,)", "1.21.11-61.2.5"]
+        versions:
+          - "(,1.21.11)"
+          - "[1.21.12,)"
+          # These published versions add Start.class before ForgeGradle 6 injects it again.
+          - "1.21.11-61.1.7"
+          - "1.21.11-61.1.8"
+          - "1.21.11-61.1.9"
+          - "1.21.11-61.1.10"
+          - "1.21.11-61.1.11"
+          - "1.21.11-61.1.12"
+          - "1.21.11-61.1.13"
+          - "1.21.11-61.1.14"
+          - "1.21.11-61.1.15"
+          - "1.21.11-61.1.16"
+          - "1.21.11-61.2.0"
+          - "1.21.11-61.2.1"
+          - "1.21.11-61.2.3"
+          - "1.21.11-61.2.4"
+          - "1.21.11-61.2.5"
       # Keep the validator aligned with the EventBus version in the Forge userdev.
       - dependency-name: "net.minecraftforge:eventbus-validator"
-        versions: ["(7.0-beta.12,)"]
+        versions: ["(7.0.1,)"]
     groups:
       forge-1-21-11-minor-patch:
         patterns: ["*"]
