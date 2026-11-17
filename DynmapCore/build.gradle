@@ -20,7 +20,7 @@ dependencies {
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.26.v20200117'
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     implementation 'org.yaml:snakeyaml:2.7' // Keep in sync with forge-1.12.2, which compiles these sources directly.
-    implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20180219.1'
+    implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20261110.1'
     implementation 'org.postgresql:postgresql:42.7.14'
     implementation 'io.github.linktosriram.s3lite:core:0.0.2-SNAPSHOT'
     implementation 'io.github.linktosriram.s3lite:api:0.0.2-SNAPSHOT'
