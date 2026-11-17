@@ -39,7 +39,7 @@ dependencies {
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
     implementation 'com.sun.xml.bind:jaxb-impl:3.0.2'
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
-    implementation 'org.spongepowered:spongeapi:7.0.0'
+    implementation 'org.spongepowered:spongeapi:14.0.0'
 }
 
 sourceCompatibility = 1.8
