@@ -53,12 +53,6 @@ updates:
       - "/fabric-1.15.2"
       - "/fabric-1.16.4"
       - "/fabric-1.17.1"
-      - "/fabric-1.18.2"
-      - "/fabric-1.19.4"
-      - "/fabric-1.20.6"
-      - "/fabric-1.21.11"
-      - "/fabric-1.21.6"
-      - "/fabric-1.21.9-10"
       - "/forge-1.12.2"
       - "/forge-1.14.4"
       - "/forge-1.15.2"
@@ -82,16 +76,100 @@ updates:
       # Keep the shared build on Gradle 8 while the legacy Spigot build requires it.
       - dependency-name: "gradle-wrapper"
         update-types: ["version-update:semver-major"]
+      # Loom 1.14 and higher require Gradle 9. The Forge and legacy Spigot build still uses Gradle 8.
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
       # s3lite references Jakarta JAXB. Version 4 requires Java 11, while Dynmap supports Java 8.
       - dependency-name: "jakarta.xml.bind:jakarta.xml.bind-api"
         versions: ["[4.0.0,)"]
       - dependency-name: "com.sun.xml.bind:jaxb-impl"
         versions: ["[4.0.0,)"]
-      # 0.7.0 targets Minecraft 26.1, not the older Fabric modules in this repository.
-      - dependency-name: "me.lucko:fabric-permissions-api"
-        versions: ["0.7.0"]
     groups:
       gradle-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  # fabric-permissions-api builds target different Minecraft releases.
+  # See https://github.com/lucko/fabric-permissions-api/blob/master/USAGE.md
+  - package-ecosystem: gradle
+    registries: [mikeprimm]
+    directories:
+      - "/fabric-1.18.2"
+      - "/fabric-1.19.4"
+      - "/fabric-1.20.6"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "me.lucko:fabric-permissions-api"
+        versions: ["[0.3.2,)"]
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
+    groups:
+      fabric-legacy-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: gradle
+    registries: [mikeprimm]
+    directories:
+      - "/fabric-1.21.6"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "me.lucko:fabric-permissions-api"
+        versions: ["[0.5.0,)"]
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
+    groups:
+      fabric-1.21.6-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: gradle
+    registries: [mikeprimm]
+    directories:
+      - "/fabric-1.21.9-10"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "me.lucko:fabric-permissions-api"
+        versions: ["[0.6.0,)"]
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
+    groups:
+      fabric-1.21.9-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: gradle
+    registries: [mikeprimm]
+    directories:
+      - "/fabric-1.21.11"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "me.lucko:fabric-permissions-api"
+        versions: ["[0.7.0,)"]
+      - dependency-name: "fabric-loom"
+        versions: ["[1.14,)"]
+    groups:
+      fabric-1.21.11-minor-patch:
         patterns: ["*"]
         update-types: ["minor", "patch"]
 
