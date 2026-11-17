@@ -36,7 +36,7 @@ project.archivesBaseName = "${project.archivesBaseName}-forge-1.15.2"
 
 dependencies {
     implementation project(path: ":DynmapCore", configuration: "shadow")
-    minecraft 'net.minecraftforge:forge:1.15.2-31.2.3'
+    minecraft 'net.minecraftforge:forge:26.3-66.1.8'
 }
 
 processResources
