@@ -18,7 +18,7 @@ dependencies {
     implementation project(':jetty-security-patched')
     implementation project(':DynmapCoreAPI')
     implementation 'javax.servlet:javax.servlet-api:4.0.1'
-    implementation 'org.eclipse.jetty:jetty-server:9.4.58.v20250814'
+    implementation project(':jetty-server-patched')
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.58.v20250814'
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     implementation 'org.yaml:snakeyaml:2.7' // Keep in sync with forge-1.12.2, which compiles these sources directly.
@@ -108,6 +108,7 @@ artifacts {
 configurations.all {
     exclude group: 'org.eclipse.jetty', module: 'jetty-http'
     exclude group: 'org.eclipse.jetty', module: 'jetty-security'
+    exclude group: 'org.eclipse.jetty', module: 'jetty-server'
 }
 
 apply from: project(':jetty-http-patched').file('verify-shadow.gradle')
@@ -115,3 +116,5 @@ apply from: project(':jetty-http-patched').file('verify-shadow.gradle')
 test.dependsOn ':jetty-http-patched:verifyPatchedJettyHttp'
 
 test.dependsOn ':jetty-security-patched:verifyPatchedJettySecurity'
+
+test.dependsOn ':jetty-server-patched:verifyPatchedJettyServer'

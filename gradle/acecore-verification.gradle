@@ -44,6 +44,8 @@ if (findProject(':spigot') != null) {
                     'org/dynmap/jetty/http/HttpURI.class',
                     'META-INF/acecore/BACKPORT.md',
                     'META-INF/acecore/jetty-security/BACKPORT.md',
+                    'META-INF/acecore/jetty-server/BACKPORT.md',
+                    'org/dynmap/jetty/server/HttpChannelOverHttp.class',
                     'org/dynmap/jetty/security/ConstraintSecurityHandler.class',
                     'org/dynmap/jetty/servlet/ServletContextHandler.class',
                     'org/dynmap/javax/servlet/Servlet.class',
@@ -59,19 +61,30 @@ if (findProject(':spigot') != null) {
                 File coreJar = project(':DynmapCore').tasks.named('shadowJar').get().archiveFile.get().asFile
                 new ZipFile(coreJar).withCloseable { core ->
                     def parserNames = core.entries().findAll {
-                        it.name ==~ /org\/dynmap\/jetty\/(http\/(HttpParser|HttpURI)|security\/ConstraintSecurityHandler)(\$.*)?\.class/
+                        it.name ==~ /org\/dynmap\/jetty\/(http\/(HttpParser|HttpURI)|security\/ConstraintSecurityHandler|server\/HttpChannelOverHttp)(\$.*)?\.class/
                     }.collect { it.name } as Set
                     def packaged = zip.entries().findAll {
-                        it.name ==~ /org\/dynmap\/jetty\/(http\/(HttpParser|HttpURI)|security\/ConstraintSecurityHandler)(\$.*)?\.class/
+                        it.name ==~ /org\/dynmap\/jetty\/(http\/(HttpParser|HttpURI)|security\/ConstraintSecurityHandler|server\/HttpChannelOverHttp)(\$.*)?\.class/
                     }.collect { it.name }
                     if (packaged.size() != parserNames.size() || (packaged as Set) != parserNames ||
-                        zip.entries().any { it.name ==~ /org\/eclipse\/jetty\/(http\/(HttpParser|HttpURI)|security\/ConstraintSecurityHandler)(\$.*)?\.class/ }) {
+                        zip.entries().any { it.name ==~ /org\/eclipse\/jetty\/(http\/(HttpParser|HttpURI)|security\/ConstraintSecurityHandler|server\/HttpChannelOverHttp)(\$.*)?\.class/ }) {
                         throw new GradleException('Spigot must preserve the complete relocated Core parser')
                     }
                     parserNames.each { name ->
                         if (!java.util.Arrays.equals(core.getInputStream(core.getEntry(name)).bytes,
                             zip.getInputStream(zip.getEntry(name)).bytes)) {
                             throw new GradleException("Spigot modified the verified parser class: ${name}")
+                        }
+                    }
+                    [':jetty-http-patched', ':jetty-security-patched', ':jetty-server-patched'].each { path ->
+                        def p = project(path)
+                        def documents = ['BACKPORT.md'] + p.backportSources.keySet().collect { it.tokenize('/').last() + '.patch' }
+                        documents.each { document ->
+                            String name = p.backportProvenancePath + '/' + document
+                            if (zip.getEntry(name) == null || !java.util.Arrays.equals(core.getInputStream(core.getEntry(name)).bytes,
+                                zip.getInputStream(zip.getEntry(name)).bytes)) {
+                                throw new GradleException("Spigot modified backport provenance: ${name}")
+                            }
                         }
                     }
                 }

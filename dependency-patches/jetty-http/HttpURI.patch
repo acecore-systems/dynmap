@@ -68,7 +68,7 @@
 +                            else
 +                            {
 +                                mark = i + 1;
-+                                _path = "";
++                                _path = null;
 +                                state = c == '?' ? State.QUERY : State.FRAGMENT;
 +                            }
                              break;
@@ -97,7 +97,7 @@
                              {
 -                                mark = i + 1;
 -                                state = State.PORT;
-+                                _path = authorityForm ? null : "";
++                                _path = null;
 +                                mark = i;
 +                                state = State.HOST;
 +                                break;
@@ -117,7 +117,7 @@
 +                                    if (authorityForm)
 +                                        throw new IllegalArgumentException("Bad authority");
 +                                    mark = i + 1;
-+                                    _path = "";
++                                    _path = null;
 +                                    state = c == '?' ? State.QUERY : State.FRAGMENT;
 +                                    break;
 +                                case '/':
@@ -148,31 +148,12 @@
 +                            throw new IllegalArgumentException("Bad authority");
 +                        _port = TypeUtil.parseInt(uri, mark, i - mark, 10);
 +                        mark = i + 1;
-+                        _path = "";
++                        _path = null;
 +                        state = c == '?' ? State.QUERY : State.FRAGMENT;
                      }
                      else if (c == '/')
                      {
-@@ -809,12 +857,18 @@
-                 break;
-             case HOST:
-                 if (end > mark)
-+                {
-                     _host = uri.substring(mark, end);
-+                    if (_scheme != null)
-+                        _path = "";
-+                }
-                 break;
-             case IPV6:
-                 throw new IllegalArgumentException("No closing ']' for ipv6 in " + uri);
-             case PORT:
-                 _port = TypeUtil.parseInt(uri, mark, end - mark, 10);
-+                if (!authorityForm)
-+                    _path = "";
-                 break;
-             case PARAM:
-                 _path = uri.substring(pathMark, end);
-@@ -852,6 +906,63 @@
+@@ -852,6 +900,63 @@
          }
      }
  
@@ -236,3 +217,11 @@
      /**
       * Check for ambiguous path segments.
       *
+@@ -1211,5 +1316,7 @@
+     {
+         if (_query == null)
+             return _path;
++        if (_path == null)
++            return "?" + _query;
+         return _path + "?" + _query;
+     }

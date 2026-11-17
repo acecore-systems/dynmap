@@ -9,3 +9,6 @@ project(':jetty-http-patched').projectDir = file('../dependency-patches/jetty-ht
 
 include ':jetty-security-patched'
 project(':jetty-security-patched').projectDir = file('../dependency-patches/jetty-security')
+
+include ':jetty-server-patched'
+project(':jetty-server-patched').projectDir = file('../dependency-patches/jetty-server')

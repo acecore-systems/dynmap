@@ -1,0 +1,84 @@
+--- a/org/eclipse/jetty/server/HttpChannelOverHttp.java
++++ b/org/eclipse/jetty/server/HttpChannelOverHttp.java
+@@ -22,6 +22,7 @@
+ import java.nio.ByteBuffer;
+ import java.util.ArrayList;
+ import java.util.List;
++import java.util.Locale;
+ 
+ import org.eclipse.jetty.http.BadMessageException;
+ import org.eclipse.jetty.http.HostPortHttpField;
+@@ -40,6 +41,7 @@
+ import org.eclipse.jetty.http.MetaData;
+ import org.eclipse.jetty.io.Connection;
+ import org.eclipse.jetty.io.EndPoint;
++import org.eclipse.jetty.util.HostPort;
+ import org.eclipse.jetty.util.log.Log;
+ import org.eclipse.jetty.util.log.Logger;
+ 
+@@ -286,6 +288,10 @@
+     @Override
+     public boolean headerComplete()
+     {
++        // Validate the original authority before onRequest and request customizers.
++        if (!authorityMatches(_metadata.getURI(), _fields.get(HttpHeader.HOST)))
++            throw new BadMessageException("Authority!=Host");
++
+         if (_complianceViolations != null && !_complianceViolations.isEmpty())
+         {
+             this.getRequest().setAttribute(HttpCompliance.VIOLATIONS_ATTR, _complianceViolations);
+@@ -398,6 +404,54 @@
+         return !_delayedForContent;
+     }
+ 
++    private boolean authorityMatches(HttpURI httpURI, String host)
++    {
++        String authority = httpURI.getAuthority();
++        // Either both are null or only one is present.
++        if (authority == null || host == null)
++            return true;
++
++        // Both are present, must match.
++
++        // Direct hit, hosts must be compared ignoring case.
++        if (authority.equalsIgnoreCase(host))
++            return true;
++
++        // Handle default ports: example.com matches example.com:80.
++        String scheme = httpURI.getScheme();
++        int defaultPort = getDefaultPortForScheme(scheme);
++        int uriPort = httpURI.getPort();
++        int effectiveURIPort = uriPort <= 0 ? defaultPort : uriPort;
++        HostPort hostPort = new HostPort(host);
++        int port = hostPort.getPort();
++        int effectiveHostPort = port <= 0 ? defaultPort : port;
++        if (effectiveURIPort != effectiveHostPort)
++            return false;
++
++        // Same effective port, compare hosts ignoring case.
++        return hostPort.getHost().equalsIgnoreCase(httpURI.getHost());
++    }
++
++
++    // The same case-insensitive defaults as the upstream URIUtil table.
++    private int getDefaultPortForScheme(String scheme)
++    {
++        if (scheme == null)
++            return -1;
++        switch (scheme.toLowerCase(Locale.ROOT))
++        {
++            case "ftp": return 21;
++            case "ssh": return 22;
++            case "telnet": return 23;
++            case "smtp": return 25;
++            case "http":
++            case "ws": return 80;
++            case "https":
++            case "wss": return 443;
++            default: return -1;
++        }
++    }
++
+     boolean onIdleTimeout(Throwable timeout)
+     {
+         if (_delayedForContent)

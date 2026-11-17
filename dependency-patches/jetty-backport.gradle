@@ -19,6 +19,11 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 }
 
+// Consumers need the complete repacked JAR, including unchanged upstream classes.
+configurations.matching { it.name in ['apiElements', 'runtimeElements'] }.all {
+    outgoing.variants.clear()
+}
+
 def digest = { byte[] bytes -> MessageDigest.getInstance('SHA-256').digest(bytes).encodeHex().toString() }
 
 def compiledDirectory = { compileJava.hasProperty('destinationDirectory') ? compileJava.destinationDirectory.get().asFile : compileJava.destinationDir }

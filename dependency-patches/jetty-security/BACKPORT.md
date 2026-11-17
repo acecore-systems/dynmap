@@ -30,4 +30,4 @@ HTTPと同じ厳密patch、SHA、Java8 API制約、全compiled class一致の検
 
 既存54 Gradle manifestにこのmoduleを加えて55対象とし、元Jetty Security座標の監視を維持する。公式Java8互換版へ復帰するときは、Core/旧Forgeの補修project依存と元securityの除外を公式版へ戻し、全正常・修正unitと最終Shadow検査を再実施する。原本hashは自動更新しない。
 
-Digest、SessionAuthenticationのcredential永続化、Authority/Host、URI utility等の未補修コードは残る。18662と18659以外のアドバイザリーを、この変更や機能不使用だけでfixedにしない。既存サーバーへの配布は伴わない。
+Digest、SessionAuthenticationのcredential永続化、URI utility等の未補修コードは残る。18662と18659以外のアドバイザリーを、この変更や機能不使用だけでfixedにしない。既存サーバーへの配布は伴わない。

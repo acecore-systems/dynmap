@@ -1,3 +1,5 @@
+apply plugin: 'java-library'
+
 group = 'org.eclipse.jetty'
 version = '9.4.58.v20250814-acecore.1'
 description = 'Jetty Security 9.4.58 with documented upstream method omission fixes'
@@ -16,11 +18,12 @@ ext.backportVerificationTask = 'verifyPatchedJettySecurity'
 ext.backportPreparationTask = 'prepareJettySecurity'
 apply from: '../jetty-backport.gradle'
 
-configurations.all { exclude group: 'org.eclipse.jetty', module: 'jetty-http' }
+configurations.all {
+    exclude group: 'org.eclipse.jetty', module: 'jetty-http'
+    exclude group: 'org.eclipse.jetty', module: 'jetty-server'
+}
 dependencies {
     upstreamBinary 'org.eclipse.jetty:jetty-security:9.4.58.v20250814'
     upstreamSources 'org.eclipse.jetty:jetty-security:9.4.58.v20250814:sources'
-    implementation project(':jetty-http-patched')
-    implementation 'org.eclipse.jetty:jetty-server:9.4.58.v20250814'
-    implementation 'javax.servlet:javax.servlet-api:4.0.1'
+    api project(':jetty-server-patched')
 }

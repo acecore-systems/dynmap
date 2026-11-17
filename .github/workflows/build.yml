@@ -70,3 +70,5 @@ jobs:
             dependency-patches/jetty-http/build/test-results/
             dependency-patches/jetty-security/build/reports/tests/
             dependency-patches/jetty-security/build/test-results/
+            dependency-patches/jetty-server/build/reports/tests/
+            dependency-patches/jetty-server/build/test-results/
