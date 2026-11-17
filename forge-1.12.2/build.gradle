@@ -28,7 +28,7 @@ dependencies {
     implementation'org.eclipse.jetty:jetty-server:9.4.26.v20200117'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.26.v20200117'
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
-    implementation 'org.yaml:snakeyaml:1.23'	// DON'T UPDATE - NEWER ONE TRIPS ON WINDOWS ENCODED FILES
+    implementation 'org.yaml:snakeyaml:2.7' // The shared DynmapCore sources use the same SnakeYAML API.
     implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20180219.1'
     implementation 'org.postgresql:postgresql:42.2.18'
     implementation 'io.github.linktosriram.s3lite:core:0.0.2-SNAPSHOT'
@@ -39,7 +39,6 @@ dependencies {
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
     implementation 'com.sun.xml.bind:jaxb-impl:3.0.0'
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
-    implementation 'org.yaml:snakeyaml:1.23'
     implementation 'org.spongepowered:spongeapi:7.0.0'
 }
 

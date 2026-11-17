@@ -79,7 +79,9 @@ import org.eclipse.jetty.server.session.DefaultSessionIdManager;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServlet;
@@ -2671,7 +2673,7 @@ public class DynmapCore implements DynmapCommonAPI {
         InputStream in = getClass().getResourceAsStream("/core.yml");
         if(in == null)
             return;
-        Yaml yaml = new Yaml();
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         @SuppressWarnings("unchecked")
         Map<String,Object> val = (Map<String,Object>)yaml.load(in);
         if(val != null)

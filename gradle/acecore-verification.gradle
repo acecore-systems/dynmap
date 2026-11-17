@@ -25,6 +25,10 @@ if (findProject(':spigot') != null) {
                 if (zip.entries().any { it.name.startsWith('net/minecraft/') || it.name.startsWith('org/bukkit/craftbukkit/') }) {
                     throw new GradleException('Server implementation classes must not be bundled')
                 }
+                if (zip.entries().any { it.name.startsWith('org/yaml/snakeyaml/') ||
+                    it.name ==~ /META-INF\/versions\/\d+\/org\/yaml\/snakeyaml\/.*/ }) {
+                    throw new GradleException('SnakeYAML must be relocated to the Dynmap package')
+                }
                 if (findProject(':bukkit-helper-26-2') != null &&
                     zip.getEntry('org/dynmap/bukkit/helper/v26_2/BukkitVersionHelperSpigot26_2.class') == null) {
                     throw new GradleException('Minecraft 26 helper is missing')
@@ -32,6 +36,9 @@ if (findProject(':spigot') != null) {
                 [
                     'org/dynmap/bukkit/DynmapPlugin.class',
                     'org/dynmap/DynmapCore.class',
+                    'org/dynmap/snakeyaml/Yaml.class',
+                    'org/dynmap/snakeyaml/constructor/SafeConstructor.class',
+                    'org/dynmap/snakeyaml/inspector/UnTrustedTagInspector.class',
                     'org/dynmap/jetty/server/Server.class',
                     'org/dynmap/jetty/servlet/ServletContextHandler.class',
                     'org/dynmap/javax/servlet/Servlet.class',
