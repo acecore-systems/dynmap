@@ -1,7 +1,7 @@
 buildscript {
     repositories {
         mavenCentral()
-        maven { url = "https://repo.spongepowered.org/maven" }
+        maven { url = "https://repo.spongepowered.org/repository/maven-public/" }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
@@ -48,7 +48,7 @@ ext.buildNumber = System.getenv().BUILD_NUMBER ?: "Dev"
 
 repositories {
     mavenCentral()                                          // Maven Central
-    maven { url = 'https://repo.spongepowered.org/maven' }  // SpongePowered
+    maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }  // SpongePowered
     maven { url = 'https://jitpack.io/' }                   // JitPack
 }
 
@@ -87,6 +87,8 @@ processResources {
 shadowJar {
     // Legacy Shadow leaves the Java 9 overlay unrelocated. Forge 1.12.2 uses the Java 8 classes.
     exclude('META-INF/versions/9/org/yaml/snakeyaml/**', 'META-INF/versions/9/module-info.class')
+    // PostgreSQL's Java 11 overlay cannot be read by Shadow 2; Java 8 root classes remain.
+    exclude('META-INF/versions/11/org/postgresql/**')
     dependencies {
         include(dependency('com.googlecode.json-simple:json-simple:'))
         include(dependency('org.yaml:snakeyaml:'))
