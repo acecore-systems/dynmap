@@ -26,7 +26,7 @@ Minecraft 26.2 / Java 25 の候補対応は Issue #2 で別に管理します。
 `mavenLocal()` は明示的な `-PuseMavenLocal` のときだけ有効です。CIは使いません。
 既存の Maven Central / Minecraft / MikePrimm / Spigot / CodeMC / Sonatype / JitPack
 への参照を維持し、不要なリポジトリ巡回を減らすためCentralとMikePrimmを先にします。
-既存依存のバージョンは変更しません。SNAPSHOTや動的指定は残っているため、
+依存の更新は対象を絞った別PRで検証します。SNAPSHOTや動的指定は残っているため、
 同じソースでも将来同じ依存が取得できる保証はありません。
 `build/reports/acecore/build.json` は実際に解決した依存の座標とSHA-256を記録します。
 これは監査記録であり、依存ロックや脆弱性評価の代替ではありません。
@@ -42,6 +42,10 @@ Git管理ファイルまたは未追跡ソースの変更がある場合はdirty
 GitHub Actions は固定SHAのアクション、contents:read、認証情報を残さないcheckoutを使い、
 テスト結果と監査記録だけを14日保存します。秘密値・実サーバー設定を必要としません。
 この構成は自動デプロイ、Release作成、Maven公開を行いません。
+
+SnakeYAML 2.7は、1文書あたり3,145,728コードポイント、コレクションの別名参照50個、
+コレクションのネスト50段という既定の上限を適用します。大きな `markers.yml` や
+アンカーを多用する設定は、本番反映前に隔離環境で既存コピーの読み込みを確認します。
 
 ## 変更と同期
 
